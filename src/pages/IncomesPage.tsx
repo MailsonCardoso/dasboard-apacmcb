@@ -6,7 +6,7 @@ import { PageHeader, Panel } from "@/components/finance/PageHeader";
 import { DataTable, type Column } from "@/components/finance/DataTable";
 import { StatusBadge } from "@/components/finance/StatusBadge";
 import { DetailDialog } from "@/components/finance/DetailDialog";
-import { CompetenceSelect, SimpleSelect, UnitSelect } from "@/components/finance/Selectors";
+import { SimpleSelect } from "@/components/finance/Selectors";
 import { useFilters } from "@/hooks/use-filters";
 import { useFinanceData } from "@/hooks/use-finance-data";
 import { byUnit, inPeriod, pendingIncome, receivedIncome, totalIncome } from "@/utils/finance";
@@ -14,11 +14,8 @@ import { formatBRL, formatDate } from "@/utils/format";
 import type { Income } from "@/types";
 
 export function IncomesPage() {
-  const g = useFilters();
+  const { unitId, year, month } = useFilters();
   const { incomes, unitName, connName } = useFinanceData();
-  const [unitId, setUnitId] = useState(g.unitId);
-  const [year, setYear] = useState(g.year);
-  const [month, setMonth] = useState(g.month);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [cat, setCat] = useState("all");
@@ -45,7 +42,6 @@ export function IncomesPage() {
     { key: "unit", header: "Unidade", render: (r) => unitName(r.unitId) },
     { key: "amount", header: "Valor", align: "right", render: (r) => <span className="font-medium text-income">{formatBRL(r.amount)}</span> },
     { key: "status", header: "Situação", render: (r) => <StatusBadge status={r.status} /> },
-    { key: "db", header: "Banco de origem", render: (r) => <span className="text-xs text-muted-foreground">{connName(r.connectionId)}</span> },
   ];
 
   return (
@@ -62,8 +58,6 @@ export function IncomesPage() {
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input placeholder="Pesquisar descrição ou código" value={q} onChange={(e) => setQ(e.target.value)} className="pl-8" />
           </div>
-          <UnitSelect value={unitId} onChange={setUnitId} />
-          <CompetenceSelect year={year} month={month} onYear={setYear} onMonth={setMonth} />
           <Input type="date" aria-label="Data inicial" value={from} onChange={(e) => setFrom(e.target.value)} className="w-full sm:w-40" />
           <Input type="date" aria-label="Data final" value={to} onChange={(e) => setTo(e.target.value)} className="w-full sm:w-40" />
           <SimpleSelect label="Categoria" value={cat} onChange={setCat} options={[{ value: "all", label: "Todas categorias" }, ...cats.map((c) => ({ value: c, label: c }))]} />

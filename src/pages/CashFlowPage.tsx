@@ -7,7 +7,7 @@ import { PageHeader, Panel } from "@/components/finance/PageHeader";
 import { DataTable, type Column } from "@/components/finance/DataTable";
 import { StatusBadge } from "@/components/finance/StatusBadge";
 import { DetailDialog } from "@/components/finance/DetailDialog";
-import { CompetenceSelect, SimpleSelect, UnitSelect } from "@/components/finance/Selectors";
+import { SimpleSelect } from "@/components/finance/Selectors";
 import { useFilters } from "@/hooks/use-filters";
 import { useFinanceData } from "@/hooks/use-finance-data";
 import { cashflowService } from "@/services/cashflow.service";
@@ -16,11 +16,8 @@ import { formatBRL, formatDate } from "@/utils/format";
 import type { CashMovement } from "@/types";
 
 export function CashFlowPage() {
-  const g = useFilters();
+  const { unitId, year, month } = useFilters();
   const { incomes, expenses, unitName, connName } = useFinanceData();
-  const [unitId, setUnitId] = useState(g.unitId);
-  const [year, setYear] = useState(g.year);
-  const [month, setMonth] = useState(g.month);
   const [type, setType] = useState("all");
   const [q, setQ] = useState("");
   const [desc, setDesc] = useState(false);
@@ -62,7 +59,6 @@ export function CashFlowPage() {
     { key: "in", header: "Entrada", align: "right", render: (r) => (r.inflow ? <span className="text-income">{formatBRL(r.inflow)}</span> : "—") },
     { key: "out", header: "Saída", align: "right", render: (r) => (r.outflow ? <span className="text-expense">{formatBRL(r.outflow)}</span> : "—") },
     { key: "bal", header: "Saldo após", align: "right", render: (r) => <span className={`font-medium ${r.balanceAfter < 0 ? "text-expense" : ""}`}>{formatBRL(r.balanceAfter)}</span> },
-    { key: "db", header: "Banco de origem", render: (r) => <span className="text-xs text-muted-foreground">{connName(r.connectionId)}</span> },
   ];
 
   return (
@@ -80,8 +76,6 @@ export function CashFlowPage() {
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input placeholder="Pesquisar movimentações" value={q} onChange={(e) => setQ(e.target.value)} className="pl-8" />
           </div>
-          <UnitSelect value={unitId} onChange={setUnitId} />
-          <CompetenceSelect year={year} month={month} onYear={setYear} onMonth={setMonth} />
           <SimpleSelect label="Tipo" value={type} onChange={setType} className="sm:w-36" options={[{ value: "all", label: "Todos os tipos" }, { value: "Entrada", label: "Entradas" }, { value: "Saída", label: "Saídas" }]} />
           <Button variant="outline" onClick={() => setDesc(!desc)}>
             <ArrowDownUp /> {desc ? "Mais recentes" : "Mais antigas"}

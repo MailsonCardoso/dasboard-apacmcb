@@ -31,3 +31,5 @@ use the editor.
 
 - FinanceControl is frontend-only with mock data: pages live in src/pages, routes in src/routes only wire head() + component; data comes through src/services/* (swap `simulate` for Laravel REST later). Why: spec requires a read-only frontend ready for a future Laravel API.
 - Financial rules (saldo = recebido − pago, acumulado, fluxo) live only in src/utils/finance.ts and are covered by src/test/finance.test.ts. Why: one source of truth for calculations.
+- Unit and competence filters are owned by FiltersProvider and displayed once in AppLayout; pages consume that context directly. Why: duplicated local copies drift from the visible global selection.
+- Keep the dashboard focused on financial overview, Units on the organizational directory, and Compare on cross-unit analysis. Why: distinct page responsibilities avoid repeated sections.

@@ -3,7 +3,7 @@ import { FileBarChart } from "lucide-react";
 import { PageHeader, Panel } from "@/components/finance/PageHeader";
 import { DataTable, type Column } from "@/components/finance/DataTable";
 import { ExportButtons } from "@/components/finance/ExportButtons";
-import { CompetenceSelect, UnitSelect } from "@/components/finance/Selectors";
+import { Button } from "@/components/ui/button";
 import { useFilters } from "@/hooks/use-filters";
 import { useFinanceData } from "@/hooks/use-finance-data";
 import { cashflowService } from "@/services/cashflow.service";
@@ -12,7 +12,6 @@ import {
   byUnit, filterPeriod, groupByCategory, inPeriod, monthlySeries, paidExpense, pendingExpense, pendingIncome, periodBalance, receivedIncome, totalExpense, totalIncome,
 } from "@/utils/finance";
 import { formatBRL, formatDate, MONTHS_FULL } from "@/utils/format";
-import { cn } from "@/lib/utils";
 
 const REPORTS = [
   { id: "rec-mensal", name: "Relatório mensal de receitas" },
@@ -29,12 +28,9 @@ const REPORTS = [
 type ReportId = (typeof REPORTS)[number]["id"];
 
 export function ReportsPage() {
-  const g = useFilters();
+  const { unitId, year, month } = useFilters();
   const { incomes, expenses, units, unitName, connName } = useFinanceData();
   const [report, setReport] = useState<ReportId>("demonstrativo");
-  const [unitId, setUnitId] = useState(g.unitId);
-  const [year, setYear] = useState(g.year);
-  const [month, setMonth] = useState(g.month);
   const f = { unitId, year, month };
 
   const rows: ReportRow[] = useMemo(() => {
@@ -58,8 +54,9 @@ export function ReportsPage() {
           { Item: "Saldo do período (recebido − pago)", Valor: formatBRL(periodBalance(inc, exp)) },
         ];
       case "anual":
-      case "saldo":
         return monthlySeries(uInc, uExp, year).map((s) => ({ Mês: MONTHS_FULL[s.month - 1] ?? "", Receitas: formatBRL(s.receitas), Despesas: formatBRL(s.despesas), "Saldo do mês": formatBRL(s.saldo), "Saldo acumulado": formatBRL(s.acumulado) }));
+      case "saldo":
+        return monthlySeries(uInc, uExp, year).map((s) => ({ Mês: MONTHS_FULL[s.month - 1] ?? "", "Saldo do mês": formatBRL(s.saldo), "Saldo acumulado": formatBRL(s.acumulado) }));
       case "des-cat":
       case "rec-cat": {
         const src: { category: string; amount: number }[] = report === "des-cat" ? exp : inc;
@@ -77,31 +74,30 @@ export function ReportsPage() {
     }
   }, [report, incomes, expenses, units, unitId, year, month]);
 
-  const current = REPORTS.find((r) => r.id === report)!;
+  const current = REPORTS.find((r) => r.id === report) ?? REPORTS[2];
   const headers = rows[0] ? Object.keys(rows[0]) : [];
   const columns: Column<ReportRow>[] = headers.map((h) => ({ key: h, header: h, render: (r) => r[h], ...(/Valor|Receitas|Despesas|Saldo|Entrada|Saída/.test(h) ? { align: "right" as const } : {}) }));
-  const scope = `${unitId === "all" ? "Todas as unidades" : unitName(unitId)} · ${month ? `${MONTHS_FULL[month - 1]}/${year}` : year}`;
+  const annual = report === "anual" || report === "saldo";
+  const scope = `${report === "unidades" || unitId === "all" ? "Todas as unidades" : unitName(unitId)} · ${!annual && month ? `${MONTHS_FULL[month - 1]}/${year}` : year}`;
 
   return (
     <>
       <PageHeader title="Relatórios" description="Relatórios gerenciais gerados a partir dos dados consultados." />
       <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
-        <nav className="rounded-xl border bg-card p-2 shadow-card">
+        <nav aria-label="Tipos de relatório" className="space-y-1 border-b pb-3 lg:border-b-0 lg:border-r lg:pr-4">
           {REPORTS.map((r) => (
-            <button
+            <Button
               key={r.id}
+              variant={report === r.id ? "default" : "ghost"}
+              aria-pressed={report === r.id}
               onClick={() => setReport(r.id)}
-              className={cn("flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors", report === r.id ? "bg-primary text-primary-foreground" : "hover:bg-accent")}
+              className="h-auto w-full justify-start whitespace-normal px-3 py-2 text-left"
             >
               <FileBarChart className="size-4 shrink-0" /> {r.name}
-            </button>
+            </Button>
           ))}
         </nav>
         <Panel title={current.name} description={scope} actions={<ExportButtons rows={rows} name={`financecontrol-${report}-${year}${month ? `-${String(month).padStart(2, "0")}` : ""}`} title={current.name} subtitle={scope} />}>
-          <div className="mb-4 flex flex-wrap gap-2">
-            <UnitSelect value={unitId} onChange={setUnitId} />
-            <CompetenceSelect year={year} month={month} onYear={setYear} onMonth={setMonth} />
-          </div>
           <DataTable rows={rows} columns={columns} rowKey={(r) => JSON.stringify(r)} pageSize={15} />
         </Panel>
       </div>
