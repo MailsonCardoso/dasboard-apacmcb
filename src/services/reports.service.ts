@@ -17,7 +17,7 @@ function download(blob: Blob, filename: string) {
 export const reportsService = {
   csv(rows: ReportRow[], name: string) {
     if (!rows.length) return;
-    const headers = Object.keys(rows[0]);
+    const headers = Object.keys(rows[0]!);
     const esc = (v: unknown) => `"${String(v).replace(/"/g, '""')}"`;
     const body = [headers.map(esc).join(";"), ...rows.map((r) => headers.map((h) => esc(r[h])).join(";"))].join("\n");
     download(new Blob(["\uFEFF" + body], { type: "text/csv;charset=utf-8" }), `${name}.csv`);
@@ -35,7 +35,7 @@ export const reportsService = {
     doc.text(`FinanceControl — ${title}`, 14, 16);
     doc.setFontSize(9);
     doc.text(subtitle, 14, 22);
-    const headers = Object.keys(rows[0]);
+    const headers = Object.keys(rows[0]!);
     autoTable(doc, {
       startY: 28,
       head: [headers],

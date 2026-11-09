@@ -59,10 +59,10 @@ export function ReportsPage() {
         ];
       case "anual":
       case "saldo":
-        return monthlySeries(uInc, uExp, year).map((s) => ({ Mês: MONTHS_FULL[s.month - 1], Receitas: formatBRL(s.receitas), Despesas: formatBRL(s.despesas), "Saldo do mês": formatBRL(s.saldo), "Saldo acumulado": formatBRL(s.acumulado) }));
+        return monthlySeries(uInc, uExp, year).map((s) => ({ Mês: MONTHS_FULL[s.month - 1] ?? "", Receitas: formatBRL(s.receitas), Despesas: formatBRL(s.despesas), "Saldo do mês": formatBRL(s.saldo), "Saldo acumulado": formatBRL(s.acumulado) }));
       case "des-cat":
       case "rec-cat": {
-        const src = report === "des-cat" ? exp : inc;
+        const src: { category: string; amount: number }[] = report === "des-cat" ? exp : inc;
         const total = src.reduce((s, r) => s + r.amount, 0);
         return groupByCategory(src).map((c) => ({ Categoria: c.name, Valor: formatBRL(c.value), Participação: `${total ? ((c.value / total) * 100).toFixed(1).replace(".", ",") : 0}%` }));
       }
@@ -79,7 +79,7 @@ export function ReportsPage() {
 
   const current = REPORTS.find((r) => r.id === report)!;
   const headers = rows[0] ? Object.keys(rows[0]) : [];
-  const columns: Column<ReportRow>[] = headers.map((h) => ({ key: h, header: h, render: (r) => r[h], align: /Valor|Receitas|Despesas|Saldo|Entrada|Saída/.test(h) ? "right" : undefined }));
+  const columns: Column<ReportRow>[] = headers.map((h) => ({ key: h, header: h, render: (r) => r[h], ...(/Valor|Receitas|Despesas|Saldo|Entrada|Saída/.test(h) ? { align: "right" as const } : {}) }));
   const scope = `${unitId === "all" ? "Todas as unidades" : unitName(unitId)} · ${month ? `${MONTHS_FULL[month - 1]}/${year}` : year}`;
 
   return (
