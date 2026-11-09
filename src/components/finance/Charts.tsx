@@ -35,6 +35,33 @@ export function IncomeExpenseBars({ data, height = 280 }: { data: { label: strin
 }
 
 export function BalanceLine({ data, height = 320 }: { data: { label: string; saldo: number; acumulado: number }[]; height?: number }) {
+  // Reserve a full currency label's width per month, even on narrow screens.
+  const longestLabel = Math.max(0, ...data.flatMap((row) => [formatBRL(row.saldo).length, formatBRL(row.acumulado).length]));
+  const columnWidth = Math.max(112, longestLabel * 7.2 + 24);
+  const chartWidth = Math.max(1440, Math.max(1, data.length - 1) * columnWidth + 210);
+  const renderLabel = (series: "saldo" | "acumulado") => (props: { viewBox?: unknown; value?: unknown; index?: number }) => {
+    const box = props.viewBox;
+    const row = typeof props.index === "number" ? data[props.index] : undefined;
+    if (!row || typeof props.value !== "number" || !box || typeof box !== "object" || !("x" in box) || !("y" in box) || typeof box.x !== "number" || typeof box.y !== "number") return null;
+    // Place the upper series above its point and the lower series below it.
+    // Equal balances get opposite positions, so both labels remain readable.
+    const above = series === "acumulado" ? row.acumulado >= row.saldo : row.saldo > row.acumulado;
+    return (
+      <text
+        className={`recharts-label font-mono ${props.value < 0 ? "fill-destructive" : series === "saldo" ? "fill-income" : "fill-highlight"}`}
+        x={box.x}
+        y={box.y + (above ? -18 : 22)}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize={12}
+        stroke="var(--background)"
+        strokeWidth={3}
+        paintOrder="stroke"
+      >
+        {formatBRL(props.value)}
+      </text>
+    );
+  };
   return (
     <div className="space-y-3">
       <ul aria-label="Legenda dos saldos" className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium">
@@ -54,9 +81,9 @@ export function BalanceLine({ data, height = 320 }: { data: { label: string; sal
         </li>
       </ul>
     <div className="overflow-x-auto" role="region" aria-label="Evolução do saldo mensal e acumulado" tabIndex={0}>
-      <div className="min-w-[1440px]">
+      <div style={{ minWidth: chartWidth }}>
     <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={data} margin={{ top: 30, right: 65, bottom: 25, left: 35 }}>
+      <AreaChart data={data} margin={{ top: 40, right: 90, bottom: 45, left: 50 }}>
         <defs>
           <linearGradient id="accFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={C.highlight} stopOpacity={0.12} />
@@ -68,10 +95,10 @@ export function BalanceLine({ data, height = 320 }: { data: { label: string; sal
         <YAxis {...axis} tickFormatter={formatCompactBRL} width={70} />
         <Tooltip {...tooltipStyle} />
         <Area type="monotone" dataKey="acumulado" name="Saldo acumulado" stroke={C.highlight} strokeWidth={3} fill="url(#accFill)" dot={{ r: 4, fill: C.highlight }}>
-          <LabelList dataKey="acumulado" position="top" offset={12} formatter={formatBRL} fill={C.highlight} fontSize={11} />
+          <LabelList dataKey="acumulado" content={renderLabel("acumulado")} />
         </Area>
         <Area type="monotone" dataKey="saldo" name="Saldo mensal" stroke={C.income} strokeWidth={3} fill="none" strokeDasharray="6 4" dot={{ r: 4, fill: C.income }}>
-          <LabelList dataKey="saldo" position="top" offset={12} formatter={formatBRL} fill={C.income} fontSize={11} />
+          <LabelList dataKey="saldo" content={renderLabel("saldo")} />
         </Area>
       </AreaChart>
     </ResponsiveContainer>
