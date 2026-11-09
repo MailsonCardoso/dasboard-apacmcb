@@ -71,8 +71,7 @@ function AppSidebar() {
 }
 
 function Notifications() {
-  const { connections } = useFinanceData();
-  const { expenses } = useFinanceData();
+  const { connections, expenses } = useFinanceData();
   const issues = connections.filter((c) => c.status !== "online");
   const overdue = expenses.filter((e) => e.status === "Vencida").length;
   const count = issues.length + (overdue ? 1 : 0);
@@ -106,6 +105,9 @@ function Notifications() {
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const f = useFilters();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const showPeriod = !["/configuracoes", "/bancos-de-dados", "/unidades"].includes(path);
+  const showUnit = !["/configuracoes", "/comparativo"].includes(path);
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
@@ -113,10 +115,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <SidebarInset className="min-w-0 bg-background">
           <header className="sticky top-0 z-20 flex flex-wrap items-center gap-2 border-b bg-card/90 px-4 py-2.5 backdrop-blur">
             <SidebarTrigger />
-            <span className="hidden font-display font-semibold md:inline">FinanceControl</span>
             <div className="ml-auto flex flex-wrap items-center gap-2">
-              <UnitSelect value={f.unitId} onChange={f.setUnitId} className="h-9 sm:w-48" />
-              <CompetenceSelect year={f.year} month={f.month} onYear={f.setYear} onMonth={f.setMonth} />
+              {showUnit && <UnitSelect value={f.unitId} onChange={f.setUnitId} className="h-9 sm:w-48" />}
+              {showPeriod && <CompetenceSelect year={f.year} month={f.month} onYear={f.setYear} onMonth={f.setMonth} />}
               <Notifications />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

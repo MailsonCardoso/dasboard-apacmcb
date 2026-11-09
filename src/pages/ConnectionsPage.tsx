@@ -12,6 +12,7 @@ import { DataTable, type Column } from "@/components/finance/DataTable";
 import { StatusBadge } from "@/components/finance/StatusBadge";
 import { SimpleSelect } from "@/components/finance/Selectors";
 import { useFinanceData } from "@/hooks/use-finance-data";
+import { useFilters } from "@/hooks/use-filters";
 import { connectionsService } from "@/services/connections.service";
 import { formatDateTime } from "@/utils/format";
 import type { DbConnection, DbType } from "@/types";
@@ -23,6 +24,7 @@ type Draft = Omit<DbConnection, "id" | "lastCheck" | "passwordMask"> & { id?: st
 const empty = (unitId: string): Draft => ({ name: "", unitId, type: "MySQL", host: "", port: 3306, database: "", user: "", password: "", description: "", status: "online" });
 
 export function ConnectionsPage() {
+  const { unitId } = useFilters();
   const { connections: initial, units, unitName } = useFinanceData();
   // Somente o cadastro de configuração do FinanceControl (em memória). Senhas nunca são persistidas no navegador.
   const [list, setList] = useState<DbConnection[]>(initial);
@@ -91,14 +93,14 @@ export function ConnectionsPage() {
         title="Bancos de dados"
         description="Conexões de consulta configuradas para cada unidade."
         readOnly={false}
-        actions={<Button onClick={() => setDraft(empty(units[0]?.id ?? ""))}><Plus /> Nova conexão</Button>}
+        actions={<Button onClick={() => setDraft(empty(unitId === "all" ? units[0]?.id ?? "" : unitId))}><Plus /> Nova conexão</Button>}
       />
       <div className="mb-4 flex items-start gap-2 rounded-xl border border-highlight/30 bg-highlight-soft p-3 text-sm text-accent-foreground">
         <ShieldCheck className="mt-0.5 size-4 shrink-0 text-highlight" />
         <p>Editar ou excluir uma conexão altera apenas o cadastro de configuração do FinanceControl — nunca os dados do banco de origem. Use sempre usuários com privilégio exclusivo de leitura (SELECT).</p>
       </div>
       <Panel>
-        <DataTable rows={list} columns={columns} rowKey={(r) => r.id} rowClassName={(r) => (r.status === "offline" ? "bg-expense-soft/40" : undefined)} />
+        <DataTable rows={list.filter((c) => unitId === "all" || c.unitId === unitId)} columns={columns} rowKey={(r) => r.id} rowClassName={(r) => (r.status === "offline" ? "bg-expense-soft/40" : undefined)} />
       </Panel>
 
       <Dialog open={!!view} onOpenChange={(o) => !o && setView(null)}>
