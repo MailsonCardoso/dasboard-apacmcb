@@ -13,7 +13,7 @@ const C = {
 export const PALETTE = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--highlight-soft)", "var(--muted-foreground)", "var(--primary)"];
 
 const tooltipStyle = {
-  contentStyle: { background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12 },
+  contentStyle: { background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12 },
   formatter: (v: number) => formatBRL(v),
 };
 const axis = { stroke: C.axis, fontSize: 11, tickLine: false, axisLine: false };
@@ -21,7 +21,7 @@ const axis = { stroke: C.axis, fontSize: 11, tickLine: false, axisLine: false };
 export function IncomeExpenseBars({ data, height = 280 }: { data: { label: string; receitas: number; despesas: number }[]; height?: number }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} barGap={4}>
+      <BarChart data={data} barGap={4} barSize={9}>
         <CartesianGrid stroke={C.grid} vertical={false} />
         <XAxis dataKey="label" {...axis} />
         <YAxis {...axis} tickFormatter={formatCompactBRL} width={70} />
@@ -40,7 +40,7 @@ export function BalanceLine({ data, height = 280 }: { data: { label: string; sal
       <AreaChart data={data}>
         <defs>
           <linearGradient id="accFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={C.highlight} stopOpacity={0.3} />
+            <stop offset="0%" stopColor={C.highlight} stopOpacity={0.12} />
             <stop offset="100%" stopColor={C.highlight} stopOpacity={0} />
           </linearGradient>
         </defs>
@@ -70,9 +70,9 @@ export function CategoryDonut({ data, height = 260 }: { data: { name: string; va
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <ul className="w-full space-y-1.5 text-xs sm:w-1/2">
+      <ul className="w-full space-y-3 text-xs sm:w-1/2">
         {data.map((d, i) => (
-          <li key={d.name} className="flex items-center justify-between gap-2">
+          <li key={d.name} className="flex items-center justify-between gap-2 border-b border-border/60 pb-2 last:border-0">
             <span className="flex min-w-0 items-center gap-2">
               <span className="size-2.5 shrink-0 rounded-sm" style={{ background: PALETTE[i % PALETTE.length] }} />
               <span className="truncate">{d.name}</span>
