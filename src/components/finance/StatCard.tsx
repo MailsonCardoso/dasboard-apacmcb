@@ -40,7 +40,7 @@ export function StatCard({ label, value, icon: Icon, tone = "neutral", change, i
       </div>
       <p
         className={cn(
-          "mt-4 break-words font-sans text-2xl font-semibold leading-tight tabular",
+          "mt-4 font-sans text-xl font-semibold leading-tight tabular",
           valueTone === "income" && "text-income",
           valueTone === "expense" && "text-expense",
         )}
