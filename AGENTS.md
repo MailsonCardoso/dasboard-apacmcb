@@ -28,3 +28,6 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- FinanceControl is frontend-only with mock data: pages live in src/pages, routes in src/routes only wire head() + component; data comes through src/services/* (swap `simulate` for Laravel REST later). Why: spec requires a read-only frontend ready for a future Laravel API.
+- Financial rules (saldo = recebido − pago, acumulado, fluxo) live only in src/utils/finance.ts and are covered by src/test/finance.test.ts. Why: one source of truth for calculations.
