@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Lock } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-export function DetailDialog({ open, onOpenChange, title, subtitle, items }: { open: boolean; onOpenChange: (v: boolean) => void; title: string; subtitle?: string; items: { label: string; value: ReactNode }[] }) {
+export function DetailDialog({ open, onOpenChange, title, subtitle, items }: { open: boolean; onOpenChange: (v: boolean) => void; title: string; subtitle?: string | undefined; items: { label: string; value: ReactNode }[] }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">

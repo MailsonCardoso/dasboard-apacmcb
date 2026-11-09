@@ -50,7 +50,7 @@ export function CashFlowPage() {
 
   const inflow = flow.reduce((s, m) => s + m.inflow, 0);
   const outflow = flow.reduce((s, m) => s + m.outflow, 0);
-  const closing = flow.length ? flow[flow.length - 1].balanceAfter : opening;
+  const closing = flow.at(-1)?.balanceAfter ?? opening;
 
   const columns: Column<CashMovement>[] = [
     { key: "date", header: "Data", render: (r) => formatDate(r.date) },

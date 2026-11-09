@@ -43,7 +43,10 @@ export function ConnectionsPage() {
 
   const save = () => {
     if (!draft) return;
-    if (!draft.name || !draft.host || !draft.database || !draft.user) return toast.error("Preencha nome, servidor, banco e usuário.");
+    if (!draft.name || !draft.host || !draft.database || !draft.user) {
+      toast.error("Preencha nome, servidor, banco e usuário.");
+      return;
+    }
     const { password, ...rest } = draft;
     const mask = password ? "•".repeat(Math.max(8, password.length)) : undefined;
     if (draft.id) {
@@ -88,7 +91,7 @@ export function ConnectionsPage() {
         title="Bancos de dados"
         description="Conexões de consulta configuradas para cada unidade."
         readOnly={false}
-        actions={<Button onClick={() => setDraft(empty(units[0].id))}><Plus /> Nova conexão</Button>}
+        actions={<Button onClick={() => setDraft(empty(units[0]?.id ?? ""))}><Plus /> Nova conexão</Button>}
       />
       <div className="mb-4 flex items-start gap-2 rounded-xl border border-highlight/30 bg-highlight-soft p-3 text-sm text-accent-foreground">
         <ShieldCheck className="mt-0.5 size-4 shrink-0 text-highlight" />

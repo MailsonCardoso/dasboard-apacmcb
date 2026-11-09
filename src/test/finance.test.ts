@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Expense, Income } from "@/types";
-import { accumulatedBalance, buildCashFlow, filterPeriod, periodBalance } from "./finance";
+import { accumulatedBalance, buildCashFlow, filterPeriod, periodBalance } from "@/utils/finance";
 
 const inc = (amount: number, status: Income["status"], date = "2026-03-10", unitId = "u1"): Income => ({
   id: `${amount}${status}${unitId}`, code: "R", date, description: "", category: "c", unitId, amount, status, connectionId: "c1",

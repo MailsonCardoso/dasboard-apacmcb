@@ -66,16 +66,16 @@ function generate() {
       if (year === 2026 && month > 11) break;
       for (const u of units) {
         const conn = connections.find((c) => c.unitId === u.id)!;
-        const scale = UNIT_SCALE[u.id] * (1 + (year - 2025) * 0.08 + Math.sin(month / 2) * 0.06);
+        const scale = (UNIT_SCALE[u.id] ?? 1) * (1 + (year - 2025) * 0.08 + Math.sin(month / 2) * 0.06);
         const maxDay = year === 2026 && month === 11 ? 9 : 28;
         for (let k = 0; k < 6; k++) {
-          const cat = INCOME_CATS[Math.floor(r() * INCOME_CATS.length)];
-          const descs = INCOME_DESC[cat];
+          const cat = INCOME_CATS[Math.floor(r() * INCOME_CATS.length)]!;
+          const descs = INCOME_DESC[cat]!;
           const date = `${year}-${pad(month)}-${pad(1 + Math.floor(r() * maxDay))}`;
           const ageDays = (Date.parse(REFERENCE_DATE) - Date.parse(date)) / 864e5;
           incomes.push({
             id: `r${ic}`, code: `REC-${String(ic).padStart(5, "0")}`, date,
-            description: descs[Math.floor(r() * descs.length)], category: cat, unitId: u.id,
+            description: descs[Math.floor(r() * descs.length)]!, category: cat, unitId: u.id,
             amount: Math.round((4000 + r() * 22000) * scale * 100) / 100,
             status: ageDays > 45 || r() > 0.4 ? "Recebida" : "Pendente",
             connectionId: conn.id,
@@ -83,8 +83,8 @@ function generate() {
           ic++;
         }
         for (let k = 0; k < 8; k++) {
-          const cat = EXPENSE_CATS[k % EXPENSE_CATS.length];
-          const descs = EXPENSE_DESC[cat];
+          const cat = EXPENSE_CATS[k % EXPENSE_CATS.length]!;
+          const descs = EXPENSE_DESC[cat]!;
           const date = `${year}-${pad(month)}-${pad(1 + Math.floor(r() * maxDay))}`;
           const dueDate = addDays(date, 5 + Math.floor(r() * 20));
           const base = cat === "Folha de pagamento" ? 14000 : cat === "Fornecedores" ? 9000 : 2500;
@@ -92,7 +92,7 @@ function generate() {
           const paymentDate = paid ? (() => { const p = addDays(dueDate, -Math.floor(r() * 4)); return p > REFERENCE_DATE ? REFERENCE_DATE : p; })() : null;
           expenses.push({
             id: `d${ec}`, code: `DES-${String(ec).padStart(5, "0")}`, date, dueDate, paymentDate,
-            description: descs[Math.floor(r() * descs.length)], category: cat, unitId: u.id,
+            description: descs[Math.floor(r() * descs.length)]!, category: cat, unitId: u.id,
             amount: Math.round(base * (0.7 + r() * 0.6) * scale * 100) / 100,
             status: paid ? "Paga" : dueDate < REFERENCE_DATE ? "Vencida" : "Pendente",
             connectionId: conn.id,

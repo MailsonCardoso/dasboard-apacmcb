@@ -5,7 +5,10 @@ import { reportsService, type ReportRow } from "@/services/reports.service";
 
 export function ExportButtons({ rows, name, title, subtitle }: { rows: ReportRow[]; name: string; title: string; subtitle: string }) {
   const run = (fn: () => void, kind: string) => {
-    if (!rows.length) return toast.error("Não há dados para exportar com os filtros atuais.");
+    if (!rows.length) {
+      toast.error("Não há dados para exportar com os filtros atuais.");
+      return;
+    }
     try {
       fn();
       toast.success(`${kind} gerado com ${rows.length} registros.`);

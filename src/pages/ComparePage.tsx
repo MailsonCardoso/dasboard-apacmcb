@@ -32,7 +32,7 @@ export function ComparePage() {
 
   const evolution = useMemo(() => {
     const per = rows.map((r) => ({ name: r.label, s: monthlySeries(byUnit(incomes, r.id), byUnit(expenses, r.id), f.year) }));
-    return MONTHS.map((m, i) => Object.fromEntries([["label", m], ...per.map((p) => [p.name, p.s[i].saldo])]));
+    return MONTHS.map((m, i) => Object.fromEntries([["label", m], ...per.map((p) => [p.name, p.s[i]?.saldo ?? 0])]));
   }, [rows, incomes, expenses, f.year]);
 
   const columns: Column<(typeof rows)[number]>[] = [

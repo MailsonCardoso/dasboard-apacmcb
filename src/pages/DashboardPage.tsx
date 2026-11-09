@@ -24,7 +24,7 @@ export function DashboardPage() {
     const uExp = byUnit(expenses, f.unitId);
     const acc = accumulatedBalance(uInc, uExp, periodEnd(f.year, f.month));
     const accPrev = accumulatedBalance(uInc, uExp, periodEnd(prev.year, prev.month));
-    const series = monthlySeries(uInc, uExp, f.year).map((s) => ({ ...s, label: MONTHS[s.month - 1] }));
+    const series = monthlySeries(uInc, uExp, f.year).map((s) => ({ ...s, label: MONTHS[s.month - 1] ?? "" }));
     const scopeUnits = f.unitId === "all" ? units : units.filter((u) => u.id === f.unitId);
     const compare = units.map((u) => {
       const ui = filterPeriod(incomes, { ...f, unitId: u.id });
