@@ -36,6 +36,23 @@ export function IncomeExpenseBars({ data, height = 280 }: { data: { label: strin
 
 export function BalanceLine({ data, height = 320 }: { data: { label: string; saldo: number; acumulado: number }[]; height?: number }) {
   return (
+    <div className="space-y-3">
+      <ul aria-label="Legenda dos saldos" className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium">
+        <li className="flex items-center gap-2 text-income">
+          <svg width="36" height="14" viewBox="0 0 36 14" aria-hidden="true" className="shrink-0">
+            <path d="M0 7H36" stroke="currentColor" strokeWidth="3" strokeDasharray="6 4" />
+            <circle cx="18" cy="7" r="4" fill="currentColor" />
+          </svg>
+          Saldo mensal
+        </li>
+        <li className="flex items-center gap-2 text-highlight">
+          <svg width="36" height="14" viewBox="0 0 36 14" aria-hidden="true" className="shrink-0">
+            <path d="M0 7H36" stroke="currentColor" strokeWidth="3" />
+            <circle cx="18" cy="7" r="4" fill="currentColor" />
+          </svg>
+          Saldo acumulado
+        </li>
+      </ul>
     <div className="overflow-x-auto" role="region" aria-label="Evolução do saldo mensal e acumulado" tabIndex={0}>
       <div className="min-w-[1440px]">
     <ResponsiveContainer width="100%" height={height}>
@@ -50,16 +67,16 @@ export function BalanceLine({ data, height = 320 }: { data: { label: string; sal
         <XAxis dataKey="label" {...axis} interval={0} tickMargin={14} />
         <YAxis {...axis} tickFormatter={formatCompactBRL} width={70} />
         <Tooltip {...tooltipStyle} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Area type="monotone" dataKey="acumulado" name="Saldo acumulado" stroke={C.highlight} strokeWidth={2.5} fill="url(#accFill)" dot={{ r: 3 }}>
+        <Area type="monotone" dataKey="acumulado" name="Saldo acumulado" stroke={C.highlight} strokeWidth={3} fill="url(#accFill)" dot={{ r: 4, fill: C.highlight }}>
           <LabelList dataKey="acumulado" position="top" offset={12} formatter={formatBRL} fill={C.highlight} fontSize={11} />
         </Area>
-        <Area type="monotone" dataKey="saldo" name="Saldo do mês" stroke={C.income} strokeWidth={2} fill="none" strokeDasharray="4 3" dot={{ r: 3 }}>
+        <Area type="monotone" dataKey="saldo" name="Saldo mensal" stroke={C.income} strokeWidth={3} fill="none" strokeDasharray="6 4" dot={{ r: 4, fill: C.income }}>
           <LabelList dataKey="saldo" position="top" offset={12} formatter={formatBRL} fill={C.income} fontSize={11} />
         </Area>
       </AreaChart>
     </ResponsiveContainer>
       </div>
+    </div>
     </div>
   );
 }
