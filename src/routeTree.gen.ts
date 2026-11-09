@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BancosDeDadosRouteImport } from './routes/bancos-de-dados'
+import { Route as ComparativoRouteImport } from './routes/comparativo'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as DespesasRouteImport } from './routes/despesas'
+import { Route as FluxoDeCaixaRouteImport } from './routes/fluxo-de-caixa'
+import { Route as ReceitasRouteImport } from './routes/receitas'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
+import { Route as UnidadesRouteImport } from './routes/unidades'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BancosDeDadosRoute = BancosDeDadosRouteImport.update({
+  id: '/bancos-de-dados',
+  path: '/bancos-de-dados',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComparativoRoute = ComparativoRouteImport.update({
+  id: '/comparativo',
+  path: '/comparativo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DespesasRoute = DespesasRouteImport.update({
+  id: '/despesas',
+  path: '/despesas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FluxoDeCaixaRoute = FluxoDeCaixaRouteImport.update({
+  id: '/fluxo-de-caixa',
+  path: '/fluxo-de-caixa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReceitasRoute = ReceitasRouteImport.update({
+  id: '/receitas',
+  path: '/receitas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RelatoriosRoute = RelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnidadesRoute = UnidadesRouteImport.update({
+  id: '/unidades',
+  path: '/unidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bancos-de-dados': typeof BancosDeDadosRoute
+  '/comparativo': typeof ComparativoRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/despesas': typeof DespesasRoute
+  '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
+  '/receitas': typeof ReceitasRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/unidades': typeof UnidadesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bancos-de-dados': typeof BancosDeDadosRoute
+  '/comparativo': typeof ComparativoRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/despesas': typeof DespesasRoute
+  '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
+  '/receitas': typeof ReceitasRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/unidades': typeof UnidadesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bancos-de-dados': typeof BancosDeDadosRoute
+  '/comparativo': typeof ComparativoRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/despesas': typeof DespesasRoute
+  '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
+  '/receitas': typeof ReceitasRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/unidades': typeof UnidadesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/bancos-de-dados'
+    | '/comparativo'
+    | '/configuracoes'
+    | '/despesas'
+    | '/fluxo-de-caixa'
+    | '/receitas'
+    | '/relatorios'
+    | '/unidades'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/bancos-de-dados'
+    | '/comparativo'
+    | '/configuracoes'
+    | '/despesas'
+    | '/fluxo-de-caixa'
+    | '/receitas'
+    | '/relatorios'
+    | '/unidades'
+  id:
+    | '__root__'
+    | '/'
+    | '/bancos-de-dados'
+    | '/comparativo'
+    | '/configuracoes'
+    | '/despesas'
+    | '/fluxo-de-caixa'
+    | '/receitas'
+    | '/relatorios'
+    | '/unidades'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BancosDeDadosRoute: typeof BancosDeDadosRoute
+  ComparativoRoute: typeof ComparativoRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
+  DespesasRoute: typeof DespesasRoute
+  FluxoDeCaixaRoute: typeof FluxoDeCaixaRoute
+  ReceitasRoute: typeof ReceitasRoute
+  RelatoriosRoute: typeof RelatoriosRoute
+  UnidadesRoute: typeof UnidadesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +156,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bancos-de-dados': {
+      id: '/bancos-de-dados'
+      path: '/bancos-de-dados'
+      fullPath: '/bancos-de-dados'
+      preLoaderRoute: typeof BancosDeDadosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comparativo': {
+      id: '/comparativo'
+      path: '/comparativo'
+      fullPath: '/comparativo'
+      preLoaderRoute: typeof ComparativoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/despesas': {
+      id: '/despesas'
+      path: '/despesas'
+      fullPath: '/despesas'
+      preLoaderRoute: typeof DespesasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fluxo-de-caixa': {
+      id: '/fluxo-de-caixa'
+      path: '/fluxo-de-caixa'
+      fullPath: '/fluxo-de-caixa'
+      preLoaderRoute: typeof FluxoDeCaixaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/receitas': {
+      id: '/receitas'
+      path: '/receitas'
+      fullPath: '/receitas'
+      preLoaderRoute: typeof ReceitasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/relatorios': {
+      id: '/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unidades': {
+      id: '/unidades'
+      path: '/unidades'
+      fullPath: '/unidades'
+      preLoaderRoute: typeof UnidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BancosDeDadosRoute: BancosDeDadosRoute,
+  ComparativoRoute: ComparativoRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
+  DespesasRoute: DespesasRoute,
+  FluxoDeCaixaRoute: FluxoDeCaixaRoute,
+  ReceitasRoute: ReceitasRoute,
+  RelatoriosRoute: RelatoriosRoute,
+  UnidadesRoute: UnidadesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
