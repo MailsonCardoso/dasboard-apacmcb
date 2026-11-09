@@ -1,7 +1,7 @@
 # Revisão das telas
 
-- [ ] Evitar sobreposição dos rótulos de saldo no computador e celular.
-- [ ] Destacar rótulos negativos em vermelho, preservando linhas e legenda.
+- [x] Evitar sobreposição dos rótulos de saldo no computador e celular.
+- [x] Destacar rótulos negativos em vermelho, preservando linhas e legenda.
 
 - [x] Substituir o visual discreto rejeitado por cores marcantes, menu mais claro e textos maiores.
 - [x] Verificar leitura dos valores e navegação nos tamanhos de computador e celular.
