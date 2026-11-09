@@ -40,14 +40,14 @@ export function DashboardPage() {
   return (
     <>
       <PageHeader title="Dashboard financeiro" description={`Visão consolidada — ${periodLabel}`} />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
         <StatCard label={f.month ? "Receitas do mês" : "Receitas do período"} value={formatBRL(d.rec)} icon={TrendingUp} tone="income" change={pctChange(d.rec, d.recPrev)} hint={prevLabel} />
         <StatCard label={f.month ? "Despesas do mês" : "Despesas do período"} value={formatBRL(d.des)} icon={TrendingDown} tone="expense" change={pctChange(d.des, d.desPrev)} invert hint={prevLabel} />
         <StatCard label={f.month ? "Saldo do mês" : "Saldo do período"} value={formatBRL(d.saldo)} icon={PiggyBank} tone="highlight" valueTone={d.saldo >= 0 ? "income" : "expense"} change={pctChange(d.saldo, d.saldoPrev)} hint="recebido − pago" />
         <StatCard label="Saldo acumulado" value={formatBRL(d.acc)} icon={Landmark} tone="neutral" valueTone={d.acc >= 0 ? "income" : "expense"} change={pctChange(d.acc, d.accPrev)} hint={prevLabel} />
       </div>
 
-      <div className="mt-8 grid gap-x-8 gap-y-8 lg:grid-cols-2">
+      <div className="mt-8 grid gap-x-8 gap-y-8 xl:grid-cols-2">
         <Panel title="Receitas x Despesas" description={`Mensal — ${f.year}`}>
           <IncomeExpenseBars data={d.series} />
         </Panel>
