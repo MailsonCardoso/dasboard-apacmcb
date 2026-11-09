@@ -55,7 +55,7 @@ export function BalanceLine({ data, height = 320 }: { data: { label: string; sal
           <LabelList dataKey="acumulado" position="top" offset={12} formatter={formatBRL} fill={C.highlight} fontSize={11} />
         </Area>
         <Area type="monotone" dataKey="saldo" name="Saldo do mês" stroke={C.income} strokeWidth={2} fill="none" strokeDasharray="4 3" dot={{ r: 3 }}>
-          <LabelList dataKey="saldo" position="bottom" offset={12} formatter={formatBRL} fill={C.income} fontSize={11} />
+          <LabelList dataKey="saldo" position="top" offset={12} formatter={formatBRL} fill={C.income} fontSize={11} />
         </Area>
       </AreaChart>
     </ResponsiveContainer>
