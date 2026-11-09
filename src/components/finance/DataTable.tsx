@@ -39,11 +39,11 @@ export function DataTable<T>({ rows, columns, rowKey, onRowClick, pageSize = 12,
   return (
     <div>
       <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/70">
+        <table className="w-full bg-card text-sm">
+          <thead className="bg-muted">
             <tr>
               {columns.map((c) => (
-                <th key={c.key} className={cn("whitespace-nowrap px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground", c.align === "right" ? "text-right" : c.align === "center" ? "text-center" : "text-left")}>
+                <th key={c.key} className={cn("whitespace-nowrap px-4 py-3.5 text-xs font-medium text-muted-foreground", c.align === "right" ? "text-right" : c.align === "center" ? "text-center" : "text-left")}>
                   {c.header}
                 </th>
               ))}
@@ -57,7 +57,7 @@ export function DataTable<T>({ rows, columns, rowKey, onRowClick, pageSize = 12,
                 className={cn("border-t transition-colors", onRowClick && "cursor-pointer hover:bg-accent/60", rowClassName?.(row))}
               >
                 {columns.map((c) => (
-                  <td key={c.key} className={cn("whitespace-nowrap px-3 py-2.5", c.align === "right" && "text-right tabular", c.align === "center" && "text-center", c.className)}>
+                    <td key={c.key} className={cn("whitespace-nowrap px-4 py-3.5", c.align === "right" && "text-right tabular", c.align === "center" && "text-center", c.className)}>
                     {c.render(row)}
                   </td>
                 ))}

@@ -30,27 +30,32 @@ function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
-        <div className="flex items-center gap-2.5 px-1 py-2">
-          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+      <SidebarHeader className="border-b border-sidebar-border px-4 py-5 group-data-[collapsible=icon]:px-1">
+        <div className="flex items-center gap-2.5">
+          <span className="grid size-9 shrink-0 place-items-center rounded-md bg-sidebar-primary text-primary">
             <BarChart3 className="size-5" />
           </span>
           <div className="leading-tight group-data-[collapsible=icon]:hidden">
-            <p className="font-display text-base font-semibold text-sidebar-accent-foreground">FinanceControl</p>
-            <p className="text-[11px] opacity-70">Gestão multiunidade</p>
+            <p className="font-display text-sm font-semibold text-sidebar-accent-foreground">FinanceControl</p>
+            <p className="mt-1 text-[11px] opacity-70">Gestão multiunidade</p>
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Módulos</SidebarGroupLabel>
+      <SidebarContent className="gap-3 py-4">
+        {[
+          { label: "Financeiro", items: nav.filter((item) => ["/", "/receitas", "/despesas", "/fluxo-de-caixa"].includes(item.url)) },
+          { label: "Análise", items: nav.filter((item) => ["/relatorios", "/comparativo"].includes(item.url)) },
+          { label: "Organização", items: nav.filter((item) => ["/unidades", "/bancos-de-dados", "/configuracoes"].includes(item.url)) },
+        ].map((group) => (
+        <SidebarGroup key={group.label} className="px-3 group-data-[collapsible=icon]:px-1">
+          <SidebarGroupLabel className="mb-1 text-[11px] text-sidebar-foreground/60">{group.label}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {nav.map((item) => (
+              {group.items.map((item) => (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={path === item.url} tooltip={item.title}>
+                  <SidebarMenuButton asChild isActive={path === item.url} tooltip={item.title} className="h-10 rounded-md px-3 font-medium data-[active=true]:text-sidebar-primary">
                     <Link to={item.url}>
-                      <item.icon />
+                      <item.icon className="opacity-80" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -59,9 +64,10 @@ function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        ))}
       </SidebarContent>
-      <SidebarFooter>
-        <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent p-2.5 text-xs group-data-[collapsible=icon]:hidden">
+      <SidebarFooter className="border-t border-sidebar-border p-4">
+        <div className="flex items-center gap-2 text-[11px] leading-relaxed group-data-[collapsible=icon]:hidden">
           <ShieldCheck className="size-4 shrink-0 text-sidebar-primary" />
           <span>Acesso somente leitura aos bancos de origem</span>
         </div>
@@ -113,11 +119,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <SidebarInset className="min-w-0 bg-background">
-          <header className="sticky top-0 z-20 flex flex-wrap items-center gap-2 border-b bg-card/90 px-4 py-2.5 backdrop-blur">
-            <SidebarTrigger />
-            <div className="ml-auto flex flex-wrap items-center gap-2">
+          <header className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b bg-card/95 px-4 py-3 backdrop-blur md:px-8">
+            <SidebarTrigger aria-label="Abrir ou recolher menu" className="shrink-0 text-muted-foreground" />
+            <div className="hidden border-l pl-4 text-xs text-muted-foreground xl:block">Gestão financeira</div>
+            <div className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2 sm:flex-none">
               {showUnit && <UnitSelect value={f.unitId} onChange={f.setUnitId} className="h-9 sm:w-48" />}
               {showPeriod && <CompetenceSelect year={f.year} month={f.month} onYear={f.setYear} onMonth={f.setMonth} />}
+              <div className="ml-1 flex items-center gap-1 sm:border-l sm:pl-3">
               <Notifications />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -136,9 +144,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   <DropdownMenuItem disabled><LogOut /> Sair (demonstração)</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              </div>
             </div>
           </header>
-          <main className="mx-auto w-full min-w-0 max-w-[1400px] flex-1 p-4 md:p-6">{children}</main>
+          <div className="mx-auto w-full min-w-0 max-w-[1400px] flex-1 px-4 py-6 md:px-8 md:py-8">{children}</div>
         </SidebarInset>
       </div>
     </SidebarProvider>
