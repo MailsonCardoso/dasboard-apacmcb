@@ -47,7 +47,7 @@ export function DashboardPage() {
         <StatCard label="Saldo acumulado" value={formatBRL(d.acc)} icon={Landmark} tone="neutral" valueTone={d.acc >= 0 ? "income" : "expense"} change={pctChange(d.acc, d.accPrev)} hint={prevLabel} />
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <div className="mt-8 grid gap-x-8 gap-y-8 lg:grid-cols-2">
         <Panel title="Receitas x Despesas" description={`Mensal — ${f.year}`}>
           <IncomeExpenseBars data={d.series} />
         </Panel>

@@ -31,27 +31,27 @@ export function StatCard({ label, value, icon: Icon, tone = "neutral", change, i
   const bad = change != null && (invert ? change > 0 : change < 0);
   const Arrow = change == null || change === 0 ? Minus : change > 0 ? ArrowUpRight : ArrowDownRight;
   return (
-    <div className="rounded-xl border bg-card p-5 shadow-card">
+    <div className="min-w-0 rounded-lg border bg-card p-5 shadow-card">
       <div className="flex items-start justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
-        <span className={cn("grid size-9 shrink-0 place-items-center rounded-lg", toneIcon[tone])}>
+        <p className="pt-1 text-xs font-medium text-muted-foreground">{label}</p>
+        <span className={cn("grid size-8 shrink-0 place-items-center rounded-md", toneIcon[tone])}>
           <Icon className="size-4.5" />
         </span>
       </div>
       <p
         className={cn(
-          "mt-2 font-display text-2xl font-semibold tabular",
+          "mt-4 break-words font-sans text-2xl font-semibold leading-tight tabular",
           valueTone === "income" && "text-income",
           valueTone === "expense" && "text-expense",
         )}
       >
         {value}
       </p>
-      <div className="mt-2 flex items-center gap-2 text-xs">
+      <div className="mt-4 flex min-h-5 flex-wrap items-center gap-2 border-t pt-3 text-xs">
         {hasChange && (
           <span
             className={cn(
-              "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-medium",
+              "inline-flex items-center gap-0.5 rounded-sm px-1.5 py-0.5 font-medium",
               good && "bg-income-soft text-income",
               bad && "bg-expense-soft text-expense",
               !good && !bad && "bg-muted text-muted-foreground",
