@@ -110,7 +110,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <SidebarInset className="bg-background">
+        <SidebarInset className="min-w-0 bg-background">
           <header className="sticky top-0 z-20 flex flex-wrap items-center gap-2 border-b bg-card/90 px-4 py-2.5 backdrop-blur">
             <SidebarTrigger />
             <span className="hidden font-display font-semibold md:inline">FinanceControl</span>
@@ -137,7 +137,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               </DropdownMenu>
             </div>
           </header>
-          <main className="mx-auto w-full max-w-[1400px] flex-1 p-4 md:p-6">{children}</main>
+          <main className="mx-auto w-full min-w-0 max-w-[1400px] flex-1 p-4 md:p-6">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>
