@@ -1,5 +1,5 @@
 import {
-  Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Area, AreaChart,
+  Bar, BarChart, CartesianGrid, Cell, LabelList, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Area, AreaChart,
 } from "recharts";
 import { formatBRL, formatCompactBRL } from "@/utils/format";
 
@@ -34,10 +34,12 @@ export function IncomeExpenseBars({ data, height = 280 }: { data: { label: strin
   );
 }
 
-export function BalanceLine({ data, height = 280 }: { data: { label: string; saldo: number; acumulado: number }[]; height?: number }) {
+export function BalanceLine({ data, height = 320 }: { data: { label: string; saldo: number; acumulado: number }[]; height?: number }) {
   return (
+    <div className="overflow-x-auto" role="region" aria-label="Evolução do saldo mensal e acumulado" tabIndex={0}>
+      <div className="min-w-[1440px]">
     <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={data}>
+      <AreaChart data={data} margin={{ top: 30, right: 65, bottom: 25, left: 35 }}>
         <defs>
           <linearGradient id="accFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={C.highlight} stopOpacity={0.12} />
@@ -45,14 +47,20 @@ export function BalanceLine({ data, height = 280 }: { data: { label: string; sal
           </linearGradient>
         </defs>
         <CartesianGrid stroke={C.grid} vertical={false} />
-        <XAxis dataKey="label" {...axis} />
+        <XAxis dataKey="label" {...axis} interval={0} tickMargin={14} />
         <YAxis {...axis} tickFormatter={formatCompactBRL} width={70} />
         <Tooltip {...tooltipStyle} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Area type="monotone" dataKey="acumulado" name="Saldo acumulado" stroke={C.highlight} strokeWidth={2.5} fill="url(#accFill)" />
-        <Area type="monotone" dataKey="saldo" name="Saldo do mês" stroke={C.income} strokeWidth={2} fill="none" strokeDasharray="4 3" />
+        <Area type="monotone" dataKey="acumulado" name="Saldo acumulado" stroke={C.highlight} strokeWidth={2.5} fill="url(#accFill)" dot={{ r: 3 }}>
+          <LabelList dataKey="acumulado" position="top" offset={12} formatter={formatBRL} fill={C.highlight} fontSize={11} />
+        </Area>
+        <Area type="monotone" dataKey="saldo" name="Saldo do mês" stroke={C.income} strokeWidth={2} fill="none" strokeDasharray="4 3" dot={{ r: 3 }}>
+          <LabelList dataKey="saldo" position="top" offset={12} formatter={formatBRL} fill={C.income} fontSize={11} />
+        </Area>
       </AreaChart>
     </ResponsiveContainer>
+      </div>
+    </div>
   );
 }
 
