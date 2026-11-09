@@ -30,30 +30,30 @@ function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border px-4 py-5 group-data-[collapsible=icon]:px-1">
+      <SidebarHeader className="border-b border-sidebar-border px-4 py-6 group-data-[collapsible=icon]:px-1">
         <div className="flex items-center gap-2.5">
-          <span className="grid size-9 shrink-0 place-items-center rounded-md bg-sidebar-primary text-primary">
+          <span className="grid size-9 shrink-0 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
             <BarChart3 className="size-5" />
           </span>
           <div className="leading-tight group-data-[collapsible=icon]:hidden">
-            <p className="font-display text-sm font-semibold text-sidebar-accent-foreground">FinanceControl</p>
-            <p className="mt-1 text-[11px] opacity-70">Gestão multiunidade</p>
+            <p className="font-display text-base font-semibold text-sidebar-accent-foreground">FinanceControl</p>
+            <p className="mt-1 text-xs opacity-80">Gestão multiunidade</p>
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent className="gap-3 py-4">
+      <SidebarContent className="gap-1 py-3">
         {[
           { label: "Financeiro", items: nav.filter((item) => ["/", "/receitas", "/despesas", "/fluxo-de-caixa"].includes(item.url)) },
           { label: "Análise", items: nav.filter((item) => ["/relatorios", "/comparativo"].includes(item.url)) },
           { label: "Organização", items: nav.filter((item) => ["/unidades", "/bancos-de-dados", "/configuracoes"].includes(item.url)) },
         ].map((group) => (
         <SidebarGroup key={group.label} className="px-3 group-data-[collapsible=icon]:px-1">
-          <SidebarGroupLabel className="mb-1 text-[11px] text-sidebar-foreground/60">{group.label}</SidebarGroupLabel>
+          <SidebarGroupLabel className="mb-1 text-xs font-medium text-sidebar-foreground/80">{group.label}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {group.items.map((item) => (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={path === item.url} tooltip={item.title} className="h-10 rounded-md px-3 font-medium data-[active=true]:text-sidebar-primary">
+                  <SidebarMenuButton asChild isActive={path === item.url} tooltip={item.title} className="h-11 rounded-md px-3 text-[15px] font-medium data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground">
                     <Link to={item.url}>
                       <item.icon className="opacity-80" />
                       <span>{item.title}</span>
@@ -67,8 +67,8 @@ function AppSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="flex items-center gap-2 text-[11px] leading-relaxed group-data-[collapsible=icon]:hidden">
-          <ShieldCheck className="size-4 shrink-0 text-sidebar-primary" />
+        <div className="flex items-center gap-2 text-xs leading-relaxed group-data-[collapsible=icon]:hidden">
+          <ShieldCheck className="size-4 shrink-0 text-sidebar-foreground" />
           <span>Acesso somente leitura aos bancos de origem</span>
         </div>
       </SidebarFooter>
@@ -121,7 +121,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <SidebarInset className="min-w-0 bg-background">
           <header className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b bg-card/95 px-4 py-3 backdrop-blur md:px-8">
             <SidebarTrigger aria-label="Abrir ou recolher menu" className="shrink-0 text-muted-foreground" />
-            <div className="hidden border-l pl-4 text-xs text-muted-foreground xl:block">Gestão financeira</div>
             <div className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2 sm:flex-none">
               {showUnit && <UnitSelect value={f.unitId} onChange={f.setUnitId} className="h-9 sm:w-48" />}
               {showPeriod && <CompetenceSelect year={f.year} month={f.month} onYear={f.setYear} onMonth={f.setMonth} />}
@@ -131,7 +130,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="gap-2 px-2" aria-label="Perfil do usuário">
                     <span className="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">MC</span>
-                    <span className="hidden text-left text-xs leading-tight lg:block">
+                    <span className="hidden text-left text-sm leading-tight xl:block">
                       <span className="block font-medium">Mailson Cardoso</span>
                       <span className="text-muted-foreground">Controller</span>
                     </span>

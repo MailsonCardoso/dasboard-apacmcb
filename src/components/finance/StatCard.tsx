@@ -31,23 +31,23 @@ export function StatCard({ label, value, icon: Icon, tone = "neutral", change, i
   const bad = change != null && (invert ? change > 0 : change < 0);
   const Arrow = change == null || change === 0 ? Minus : change > 0 ? ArrowUpRight : ArrowDownRight;
   return (
-    <div className="min-w-0 rounded-lg border bg-card p-5 shadow-card">
+    <div className={cn("min-w-0 rounded-lg border border-t-4 bg-card p-5 shadow-card", tone === "income" ? "border-t-income" : tone === "expense" ? "border-t-expense" : tone === "warning" ? "border-t-warning" : "border-t-primary")}>
       <div className="flex items-start justify-between gap-3">
-        <p className="pt-1 text-xs font-medium text-muted-foreground">{label}</p>
-        <span className={cn("grid size-8 shrink-0 place-items-center rounded-md", toneIcon[tone])}>
+        <p className="pt-1 text-sm font-medium text-muted-foreground">{label}</p>
+        <span className={cn("grid size-10 shrink-0 place-items-center rounded-md", toneIcon[tone])}>
           <Icon className="size-4.5" />
         </span>
       </div>
       <p
         className={cn(
-          "mt-4 font-sans text-xl font-semibold leading-tight tabular",
+          "mt-3 font-sans text-2xl font-semibold leading-tight tabular",
           valueTone === "income" && "text-income",
           valueTone === "expense" && "text-expense",
         )}
       >
         {value}
       </p>
-      <div className="mt-4 flex min-h-5 flex-wrap items-center gap-2 border-t pt-3 text-xs">
+      <div className="mt-4 flex min-h-5 flex-wrap items-center gap-2 border-t pt-3 text-sm">
         {hasChange && (
           <span
             className={cn(

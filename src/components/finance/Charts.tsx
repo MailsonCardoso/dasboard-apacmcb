@@ -16,12 +16,12 @@ const tooltipStyle = {
   contentStyle: { background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12 },
   formatter: (v: number) => formatBRL(v),
 };
-const axis = { stroke: C.axis, fontSize: 11, tickLine: false, axisLine: false };
+const axis = { stroke: C.axis, fontSize: 12, tickLine: false, axisLine: false };
 
 export function IncomeExpenseBars({ data, height = 280 }: { data: { label: string; receitas: number; despesas: number }[]; height?: number }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} barGap={4} barSize={9}>
+      <BarChart data={data} barGap={4} barSize={12}>
         <CartesianGrid stroke={C.grid} vertical={false} />
         <XAxis dataKey="label" {...axis} />
         <YAxis {...axis} tickFormatter={formatCompactBRL} width={70} />
@@ -70,7 +70,7 @@ export function CategoryDonut({ data, height = 260 }: { data: { name: string; va
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <ul className="w-full space-y-3 text-xs sm:w-1/2">
+      <ul className="w-full space-y-3 text-sm sm:w-1/2">
         {data.map((d, i) => (
           <li key={d.name} className="flex items-center justify-between gap-2 border-b border-border/60 pb-2 last:border-0">
             <span className="flex min-w-0 items-center gap-2">
