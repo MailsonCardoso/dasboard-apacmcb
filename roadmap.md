@@ -1,7 +1,7 @@
 # Revisão das telas
 
-- [ ] Substituir o visual discreto rejeitado por cores marcantes, menu mais claro e textos maiores.
-- [ ] Verificar leitura dos valores e navegação nos tamanhos de computador e celular.
+- [x] Substituir o visual discreto rejeitado por cores marcantes, menu mais claro e textos maiores.
+- [x] Verificar leitura dos valores e navegação nos tamanhos de computador e celular.
 
 - [x] Refinar cores, menu, indicadores, gráficos e tabelas sem alterar os cálculos.
 - [x] Conferir o novo visual em computador e celular.
