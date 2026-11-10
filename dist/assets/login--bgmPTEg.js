@@ -1,0 +1,1 @@
+import{w as e}from"./index-Db-J47IP.js";var t=e;export{t as component};

@@ -1,9 +1,9 @@
 /**
- * FinanceControl — Service Worker (PWA / Cache Offline Resiliente)
+ * FinanceControl — Service Worker (PWA / Cache Offline Resiliente v2)
  * Compatível com Workbox e especificações PWA para cPanel / Apache / LiteSpeed.
  */
 
-const CACHE_NAME = "financecontrol-v1";
+const CACHE_NAME = "financecontrol-v2";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
@@ -12,14 +12,13 @@ const STATIC_ASSETS = [
   "/favicon.png",
   "/icon-192.png",
   "/icon-512.png",
-  "/robots.txt"
+  "/robots.txt",
 ];
 
 // Instalação do Service Worker
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      // Adiciona ativos principais tolerando eventuais omissões
       for (const asset of STATIC_ASSETS) {
         try {
           await cache.add(asset);
@@ -49,9 +48,9 @@ self.addEventListener("activate", (event) => {
 });
 
 // Estratégia de requisições:
-// - API (/api/*): Network-first (não armazena dados financeiros obsoletos)
+// - API (/api/*): Network-first
+// - Navegação SPA (HTML): Network com fallback resiliente para /index.html
 // - Assets estáticos (/assets/*): Cache-first com fallback para Network
-// - Navegação SPA (HTML): Stale-While-Revalidate com fallback para /index.html
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
@@ -67,17 +66,33 @@ self.addEventListener("fetch", (event) => {
       fetch(req).catch(() => {
         return new Response(JSON.stringify({ error: "Offline mode", fallback: true }), {
           status: 503,
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json" },
         });
       })
     );
     return;
   }
 
-  // Navegação de páginas HTML no React SPA -> Serve index.html do cache
+  // Navegação de páginas HTML no React SPA -> Serve index.html (nunca resolve undefined)
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req).catch(() => caches.match("/index.html"))
+      fetch(req).catch(async () => {
+        const cached = (await caches.match("/index.html")) || (await caches.match("/"));
+        if (cached) return cached;
+
+        try {
+          const fresh = await fetch("/index.html");
+          if (fresh && fresh.status === 200) return fresh;
+        } catch {}
+
+        return new Response(
+          "<!DOCTYPE html><html lang='pt-BR'><head><meta charset='utf-8'><title>FinanceControl</title><meta http-equiv='refresh' content='1'></head><body><p style='font-family:sans-serif;padding:2rem;'>Carregando sistema...</p></body></html>",
+          {
+            status: 200,
+            headers: { "Content-Type": "text/html; charset=utf-8" },
+          }
+        );
+      })
     );
     return;
   }
@@ -87,19 +102,21 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       caches.match(req).then((cached) => {
         if (cached) return cached;
-        return fetch(req).then((networkRes) => {
-          if (networkRes.status === 200) {
-            const clone = networkRes.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
-          }
-          return networkRes;
-        });
+        return fetch(req)
+          .then((networkRes) => {
+            if (networkRes.status === 200) {
+              const clone = networkRes.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+            }
+            return networkRes;
+          })
+          .catch(() => new Response("", { status: 404, statusText: "Asset Not Found" }));
       })
     );
     return;
   }
 
-  // Demais recursos: Network com fallback para Cache
+  // Demais recursos: Network com fallback para Cache (sempre retornando uma Response válida)
   event.respondWith(
     fetch(req)
       .then((networkRes) => {
@@ -109,7 +126,10 @@ self.addEventListener("fetch", (event) => {
         }
         return networkRes;
       })
-      .catch(() => caches.match(req))
+      .catch(async () => {
+        const cached = await caches.match(req);
+        if (cached) return cached;
+        return new Response("", { status: 408, statusText: "Offline / Timeout" });
+      })
   );
 });
-

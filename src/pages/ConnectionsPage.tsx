@@ -24,6 +24,20 @@ const DEFAULT_PORT: Record<DbType, number> = { MySQL: 3306, MariaDB: 3306, Postg
 type Draft = Omit<DbConnection, "id" | "lastCheck" | "passwordMask"> & { id?: string; password: string };
 const empty = (unitId: string): Draft => ({ name: "", unitId, type: "MySQL", host: "", port: 3306, database: "", user: "", password: "", description: "", status: "online" });
 
+const normalizeDraft = (r: Partial<DbConnection> & Record<string, any>, defaultUnitId: string): Draft => ({
+  id: r.id ? String(r.id) : undefined,
+  name: (r.name || r.nome || "").trim(),
+  unitId: String(r.unitId || r.unidade_id || defaultUnitId || "1"),
+  type: (r.type || r.tipo || "MySQL") as DbType,
+  host: (r.host || "").trim(),
+  port: Number(r.port || r.porta) || 3306,
+  database: (r.database || r.banco || "").trim(),
+  user: (r.user || r.usuario_leitura || r.usuario || "").trim(),
+  password: "",
+  description: (r.description || r.descricao || "").trim(),
+  status: r.status || "online",
+});
+
 export function ConnectionsPage() {
   const queryClient = useQueryClient();
   const { unitId } = useFilters();
@@ -70,23 +84,59 @@ export function ConnectionsPage() {
 
   const save = async () => {
     if (!draft) return;
-    if (!draft.name || !draft.host || !draft.database || !draft.user) {
-      toast.error("Preencha nome, servidor, banco e usuário.");
+
+    const name = draft.name?.trim();
+    const host = draft.host?.trim();
+    const database = draft.database?.trim();
+    const user = draft.user?.trim();
+
+    if (!name) {
+      toast.error("Por favor, informe o Nome da conexão.");
       return;
     }
+    if (!host) {
+      toast.error("Por favor, informe o IP ou Servidor.");
+      return;
+    }
+    if (!database) {
+      toast.error("Por favor, informe o Nome do banco de dados.");
+      return;
+    }
+    if (!user) {
+      toast.error("Por favor, informe o Usuário de acesso ao banco.");
+      return;
+    }
+
     const { password, ...rest } = draft;
     const mask = password ? "•".repeat(Math.max(8, password.length)) : undefined;
+
     if (draft.id) {
-      const updated = await connectionsService.update(draft.id, draft);
+      const updated = await connectionsService.update(draft.id, {
+        ...draft,
+        name,
+        host,
+        database,
+        user,
+      });
       await queryClient.invalidateQueries({ queryKey: ["connections"] });
-      setList((l) => l.map((x) => (x.id === draft.id ? { ...x, ...rest, ...updated, passwordMask: mask ?? x.passwordMask } : x)));
+      setList((l) => l.map((x) => (x.id === draft.id ? { ...x, ...rest, ...updated, name, host, database, user, passwordMask: mask ?? x.passwordMask } : x)));
       toast.success("Configuração da conexão atualizada.");
     } else {
-      const created = await connectionsService.create(draft);
+      const created = await connectionsService.create({
+        ...draft,
+        name,
+        host,
+        database,
+        user,
+      });
       await queryClient.invalidateQueries({ queryKey: ["connections"] });
       const newConn = {
         ...rest,
         ...created,
+        name,
+        host,
+        database,
+        user,
         id: String(created.id || `c${Date.now()}`),
         passwordMask: mask ?? "••••••••",
         lastCheck: created.lastCheck || new Date().toISOString().slice(0, 19),
@@ -126,7 +176,7 @@ export function ConnectionsPage() {
           <Button variant="ghost" size="icon" className="size-8 text-primary" title="Sincronizar dados remotos" aria-label="Sincronizar dados" onClick={() => sync(r)} disabled={syncing === r.id}>
             {syncing === r.id ? <Loader2 className="animate-spin" /> : <RefreshCw className="size-4" />}
           </Button>
-          <Button variant="ghost" size="icon" className="size-8" title="Editar configuração" aria-label="Editar configuração" onClick={() => setDraft({ ...r, password: "" })}><Pencil /></Button>
+          <Button variant="ghost" size="icon" className="size-8" title="Editar configuração" aria-label="Editar configuração" onClick={() => setDraft(normalizeDraft(r, unitId === "all" ? units[0]?.id ?? "1" : unitId))}><Pencil /></Button>
           <Button variant="ghost" size="icon" className="size-8 text-expense" title="Excluir conexão" aria-label="Excluir cadastro" onClick={() => setDel(r)}><Trash2 /></Button>
         </div>
       ),
@@ -200,16 +250,16 @@ export function ConnectionsPage() {
           </DialogHeader>
           {draft && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Nome da conexão"><Input value={draft.name} onChange={(e) => set("name", e.target.value)} placeholder="Banco Financeiro Matriz" /></Field>
-              <Field label="Unidade vinculada"><SimpleSelect label="Unidade" className="sm:w-full" value={draft.unitId} onChange={(v) => set("unitId", v)} options={units.map((u) => ({ value: u.id, label: u.name }))} /></Field>
-              <Field label="Tipo de banco"><SimpleSelect label="Tipo" className="sm:w-full" value={draft.type} onChange={(v) => { set("type", v as DbType); set("port", DEFAULT_PORT[v as DbType]); }} options={TYPES.map((t) => ({ value: t, label: t }))} /></Field>
-              <Field label="IP ou hostname"><Input value={draft.host} onChange={(e) => set("host", e.target.value)} placeholder="192.168.1.100" /></Field>
-              <Field label="Porta"><Input type="number" value={draft.port} onChange={(e) => set("port", Number(e.target.value))} /></Field>
-              <Field label="Nome do banco"><Input value={draft.database} onChange={(e) => set("database", e.target.value)} placeholder="financeiro_db" /></Field>
-              <Field label="Usuário"><Input value={draft.user} onChange={(e) => set("user", e.target.value)} placeholder="consulta_financeira" autoComplete="off" /></Field>
-              <Field label={draft.id ? "Senha (deixe vazio para manter)" : "Senha"}><Input type="password" value={draft.password} onChange={(e) => set("password", e.target.value)} autoComplete="new-password" /></Field>
+              <Field label="Nome da conexão *"><Input value={draft.name} onChange={(e) => set("name", e.target.value)} placeholder="Ex: Banco CMCB Monteiro Lobato" /></Field>
+              <Field label="Unidade vinculada *"><SimpleSelect label="Unidade" className="sm:w-full" value={draft.unitId} onChange={(v) => set("unitId", v)} options={units.map((u) => ({ value: u.id, label: u.name }))} /></Field>
+              <Field label="Tipo de banco *"><SimpleSelect label="Tipo" className="sm:w-full" value={draft.type} onChange={(v) => { set("type", v as DbType); set("port", DEFAULT_PORT[v as DbType]); }} options={TYPES.map((t) => ({ value: t, label: t }))} /></Field>
+              <Field label="IP ou Servidor (Host) *"><Input value={draft.host} onChange={(e) => set("host", e.target.value)} placeholder="Ex: 50.116.113.174" /></Field>
+              <Field label="Porta *"><Input type="number" value={draft.port} onChange={(e) => set("port", Number(e.target.value))} /></Field>
+              <Field label="Nome do banco *"><Input value={draft.database} onChange={(e) => set("database", e.target.value)} placeholder="Ex: hgm21923_cmcbmonteirolobato" /></Field>
+              <Field label="Usuário de acesso *"><Input value={draft.user} onChange={(e) => set("user", e.target.value)} placeholder="Ex: hgm21923_cmcbmonteirolobato" autoComplete="off" /></Field>
+              <Field label={draft.id ? "Senha (deixe vazio para manter)" : "Senha"}><Input type="password" value={draft.password} onChange={(e) => set("password", e.target.value)} autoComplete="new-password" placeholder="Senha do banco de leitura" /></Field>
               <Field label="Status"><SimpleSelect label="Status" className="sm:w-full" value={draft.status} onChange={(v) => set("status", v as Draft["status"])} options={[{ value: "online", label: "Online" }, { value: "instavel", label: "Instável" }, { value: "offline", label: "Indisponível" }]} /></Field>
-              <div className="sm:col-span-2"><Field label="Descrição"><Textarea value={draft.description} onChange={(e) => set("description", e.target.value)} rows={2} /></Field></div>
+              <div className="sm:col-span-2"><Field label="Descrição"><Textarea value={draft.description} onChange={(e) => set("description", e.target.value)} rows={2} placeholder="Observações sobre a base de dados" /></Field></div>
             </div>
           )}
           <DialogFooter>
