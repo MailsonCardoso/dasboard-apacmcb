@@ -19,7 +19,13 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'https://apacmcb.com.br',
+        'https://www.apacmcb.com.br',
+        'http://localhost:5173',
+        'http://localhost:4173',
+        '*',
+    ],
 
     'allowed_origins_patterns' => [],
 
@@ -27,7 +33,7 @@ return [
 
     'exposed_headers' => [],
 
-    'max_age' => 0,
+    'max_age' => 86400,
 
     'supports_credentials' => false,
 

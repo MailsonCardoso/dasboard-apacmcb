@@ -59,14 +59,14 @@ Para máxima segurança (evitando que o arquivo `.env` ou fontes PHP fiquem expo
 
 ### Passo 1: Criar o Subdomínio para a API
 1. No cPanel, vá em **Domínios** -> **Criar um novo domínio** (ou **Subdomínios**).
-2. Defina o subdomínio: ex. `api.seudominio.com.br`.
+2. Defina o subdomínio: `api.apacmcb.com.br`.
 3. Defina o **Document Root** apontando para a pasta pública do Laravel:
    ```text
-   /home/seu_usuario/backend/public
+   /home/hgm21923/backend/public
    ```
 
 ### Passo 2: Enviar os arquivos do Backend
-1. Crie a pasta `backend` dentro de `/home/seu_usuario/` (um nível acima de `public_html`).
+1. Crie a pasta `backend` dentro de `/home/hgm21923/` (um nível acima de `public_html`).
 2. Envie os arquivos da pasta `backend/` do projeto.
 
 ### Passo 3: Configurar a Versão do PHP
@@ -83,14 +83,14 @@ Para máxima segurança (evitando que o arquivo `.env` ou fontes PHP fiquem expo
    - `json`
 
 ### Passo 4: Configurar o `.env` do Backend
-Crie o arquivo `/home/seu_usuario/backend/.env` com as configurações do banco de dados remoto já estruturado:
+Crie o arquivo `/home/hgm21923/backend/.env` com as configurações de produção:
 
 ```env
 APP_NAME=FinanceControl
 APP_ENV=production
-APP_KEY=base64:COPIE_SUA_CHAVE_GERADA_AQUI
+APP_KEY=base64:O7iYkxYF54td2oJpOpj9PWOJco+k02CxKJS0ohXeTJw=
 APP_DEBUG=false
-APP_URL=https://api.seudominio.com.br
+APP_URL=https://api.apacmcb.com.br
 
 DB_CONNECTION=mysql
 DB_HOST=50.116.113.174
@@ -98,6 +98,12 @@ DB_PORT=3306
 DB_DATABASE=hgm21923_dasboard_apacmcb
 DB_USERNAME=hgm21923_dasboard_apacmcb
 DB_PASSWORD=@Secur1t1@
+DB_COLLATION=utf8mb4_unicode_ci
+
+SESSION_DRIVER=database
+QUEUE_CONNECTION=database
+CACHE_STORE=database
+```
 DB_COLLATION=utf8mb4_unicode_ci
 
 SESSION_DRIVER=database
