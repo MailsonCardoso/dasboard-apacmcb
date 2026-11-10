@@ -104,12 +104,6 @@ SESSION_DRIVER=database
 QUEUE_CONNECTION=database
 CACHE_STORE=database
 ```
-DB_COLLATION=utf8mb4_unicode_ci
-
-SESSION_DRIVER=database
-QUEUE_CONNECTION=database
-CACHE_STORE=database
-```
 
 > **Atenção:** Se não tiver uma chave `APP_KEY`, no terminal do cPanel acesse a pasta `backend` e rode:
 > ```bash
