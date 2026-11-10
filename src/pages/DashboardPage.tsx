@@ -1,18 +1,41 @@
-import { useMemo } from "react";
-import { Landmark, PiggyBank, TrendingDown, TrendingUp } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Landmark, Loader2, PiggyBank, RefreshCw, TrendingDown, TrendingUp } from "lucide-react";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/finance/StatCard";
 import { PageHeader, Panel } from "@/components/finance/PageHeader";
 import { BalanceLine, CategoryDonut, IncomeExpenseBars } from "@/components/finance/Charts";
 import { useFilters } from "@/hooks/use-filters";
 import { useFinanceData } from "@/hooks/use-finance-data";
+import { connectionsService } from "@/services/connections.service";
 import {
   accumulatedBalance, byUnit, filterPeriod, groupByCategory, monthlySeries, pctChange, periodBalance, periodEnd, previousPeriod, totalExpense, totalIncome,
 } from "@/utils/finance";
 import { formatBRL, MONTHS, MONTHS_FULL } from "@/utils/format";
 
 export function DashboardPage() {
+  const queryClient = useQueryClient();
   const f = useFilters();
   const { incomes, expenses } = useFinanceData();
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const res = await connectionsService.syncAll();
+      if (res.ok) {
+        toast.success(res.message);
+        await queryClient.invalidateQueries();
+      } else {
+        toast.error(res.message);
+      }
+    } catch {
+      toast.error("Erro ao sincronizar os bancos de dados das unidades.");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const d = useMemo(() => {
     const inc = filterPeriod(incomes, f);
@@ -39,7 +62,27 @@ export function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard financeiro" description={`Visão consolidada — ${periodLabel}`} />
+      <PageHeader
+        title="Dashboard financeiro"
+        description={`Visão consolidada — ${periodLabel}`}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center gap-2 font-medium shadow-xs"
+            title="Executa a sincronização dos bancos de dados das unidades (php artisan connections:sync)"
+          >
+            {syncing ? (
+              <Loader2 className="size-4 animate-spin text-primary" />
+            ) : (
+              <RefreshCw className="size-4 text-primary" />
+            )}
+            <span>{syncing ? "Sincronizando bancos..." : "Sincronizar Bancos"}</span>
+          </Button>
+        }
+      />
       <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
         <StatCard label={f.month ? "Receitas do mês" : "Receitas do período"} value={formatBRL(d.rec)} icon={TrendingUp} tone="income" change={pctChange(d.rec, d.recPrev)} hint={prevLabel} />
         <StatCard label={f.month ? "Despesas do mês" : "Despesas do período"} value={formatBRL(d.des)} icon={TrendingDown} tone="expense" change={pctChange(d.des, d.desPrev)} invert hint={prevLabel} />

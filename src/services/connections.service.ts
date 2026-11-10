@@ -41,6 +41,15 @@ export const connectionsService = {
       { ok: true, processed: 0, message: "Sincronização concluída com sucesso." }
     );
   },
+
+  /** POST /connections/sync — sincronização geral de todas as conexões ativas (php artisan connections:sync) */
+  syncAll: async () => {
+    return apiPost<{ ok: boolean; total_connections: number; processed: number; message: string }>(
+      "/connections/sync",
+      {},
+      { ok: true, total_connections: 1, processed: 0, message: "Sincronização concluída com sucesso." }
+    );
+  },
 };
 
 export const connectionsQuery = queryOptions({ queryKey: ["connections"], queryFn: connectionsService.list, staleTime: 60_000 });

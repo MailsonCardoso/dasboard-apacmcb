@@ -35,6 +35,7 @@ Route::patch('preferences', [PreferenceController::class, 'update']);
 Route::apiResource('units', UnitController::class);
 
 // Conexões de Banco de Dados
+Route::post('connections/sync', [DbConnectionController::class, 'syncAll']);
 Route::post('connections/{id}/test', [DbConnectionController::class, 'test']);
 Route::post('connections/{id}/sync', [DbConnectionController::class, 'sync']);
 Route::apiResource('connections', DbConnectionController::class);

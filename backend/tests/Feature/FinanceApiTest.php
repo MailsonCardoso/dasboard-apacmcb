@@ -83,6 +83,13 @@ class FinanceApiTest extends TestCase
         }
     }
 
+    public function test_can_sync_all_connections(): void
+    {
+        $response = $this->postJson('/api/connections/sync');
+        $this->assertContains($response->status(), [200, 207]);
+        $response->assertJsonStructure(['ok', 'total_connections', 'processed', 'message']);
+    }
+
     public function test_can_list_incomes(): void
     {
         $response = $this->getJson('/api/incomes?year=2026&month=11');

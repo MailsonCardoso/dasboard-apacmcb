@@ -214,6 +214,45 @@ class DbConnectionController extends Controller
         ]);
     }
 
+    public function syncAll(Request $request, \App\Services\UnitDatabaseSyncService $syncService): JsonResponse
+    {
+        $conexoes = Conexao::where('ativa', true)->get();
+        if ($conexoes->isEmpty()) {
+            return response()->json([
+                'ok' => true,
+                'total_connections' => 0,
+                'processed' => 0,
+                'message' => 'Nenhuma conexão ativa encontrada para sincronização.',
+            ]);
+        }
+
+        $totalProcessed = 0;
+        $successCount = 0;
+        $errors = [];
+
+        foreach ($conexoes as $conexao) {
+            $res = $syncService->syncConnection($conexao);
+            if ($res['ok']) {
+                $successCount++;
+                $totalProcessed += ($res['processed'] ?? 0);
+            } else {
+                $errors[] = "{$conexao->nome}: {$res['message']}";
+            }
+        }
+
+        $allOk = empty($errors);
+        $msg = $allOk
+            ? "Sincronização concluída com sucesso: {$totalProcessed} movimentações importadas em {$successCount} conexão(ões)."
+            : "Sincronização finalizada com avisos: " . implode('; ', $errors);
+
+        return response()->json([
+            'ok' => $allOk,
+            'total_connections' => $conexoes->count(),
+            'processed' => $totalProcessed,
+            'message' => $msg,
+        ], $allOk ? 200 : 207);
+    }
+
     public function sync(Request $request, string $id, \App\Services\UnitDatabaseSyncService $syncService): JsonResponse
     {
         $id = (int) str_replace('c', '', $id);
