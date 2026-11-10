@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, Info, Loader2, Pencil, Plug, Plus, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -28,7 +28,6 @@ export function ConnectionsPage() {
   const queryClient = useQueryClient();
   const { unitId } = useFilters();
   const { connections: initial, units, unitName } = useFinanceData();
-  // Somente o cadastro de configuração do FinanceControl (em memória). Senhas nunca são persistidas no navegador.
   const [list, setList] = useState<DbConnection[]>(initial);
   const [view, setView] = useState<DbConnection | null>(null);
   const [showPwd, setShowPwd] = useState(false);
@@ -36,6 +35,10 @@ export function ConnectionsPage() {
   const [del, setDel] = useState<DbConnection | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
   const [syncing, setSyncing] = useState<string | null>(null);
+
+  useEffect(() => {
+    setList(initial);
+  }, [initial]);
 
   const test = async (c: DbConnection) => {
     setTesting(c.id);
@@ -75,18 +78,20 @@ export function ConnectionsPage() {
     const mask = password ? "•".repeat(Math.max(8, password.length)) : undefined;
     if (draft.id) {
       const updated = await connectionsService.update(draft.id, draft);
+      await queryClient.invalidateQueries({ queryKey: ["connections"] });
       setList((l) => l.map((x) => (x.id === draft.id ? { ...x, ...rest, ...updated, passwordMask: mask ?? x.passwordMask } : x)));
       toast.success("Configuração da conexão atualizada.");
     } else {
       const created = await connectionsService.create(draft);
+      await queryClient.invalidateQueries({ queryKey: ["connections"] });
       const newConn = {
         ...rest,
         ...created,
-        id: created.id || `c${Date.now()}`,
+        id: String(created.id || `c${Date.now()}`),
         passwordMask: mask ?? "••••••••",
         lastCheck: created.lastCheck || new Date().toISOString().slice(0, 19),
       };
-      setList((l) => [...l, newConn]);
+      setList((l) => [...l.filter((x) => String(x.id) !== String(newConn.id)), newConn]);
       toast.success("Conexão cadastrada no FinanceControl.");
     }
     setDraft(null);
@@ -95,7 +100,8 @@ export function ConnectionsPage() {
   const remove = async () => {
     if (!del) return;
     await connectionsService.delete(del.id);
-    setList((l) => l.filter((x) => x.id !== del.id));
+    await queryClient.invalidateQueries({ queryKey: ["connections"] });
+    setList((l) => l.filter((x) => String(x.id) !== String(del.id)));
     toast.success(`Conexão ${del.name} removida.`);
     setDel(null);
   };

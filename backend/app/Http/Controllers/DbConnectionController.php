@@ -35,39 +35,67 @@ class DbConnectionController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'nome' => 'required|string|max:150',
-            'unitId' => 'sometimes',
-            'unidade_id' => 'sometimes',
-            'tipo' => 'required|in:MySQL,MariaDB,PostgreSQL,SQL Server,Oracle',
-            'host' => 'required|string|max:255',
-            'port' => 'sometimes|integer',
-            'porta' => 'sometimes|integer',
-            'database' => 'sometimes|string|max:150',
-            'banco' => 'sometimes|string|max:150',
-            'user' => 'sometimes|string|max:150',
-            'usuario_leitura' => 'sometimes|string|max:150',
-            'password' => 'nullable|string',
-            'descricao' => 'nullable|string',
-            'ativa' => 'boolean',
-            'status' => 'sometimes|in:nao_testada,online,offline,instavel',
-        ]);
-
-        $rawUnitId = $validated['unitId'] ?? $validated['unidade_id'] ?? 1;
+        $nome = $request->input('name') ?? $request->input('nome');
+        $tipo = $request->input('type') ?? $request->input('tipo') ?? 'MySQL';
+        $host = $request->input('host');
+        $porta = $request->input('port') ?? $request->input('porta') ?? 3306;
+        $banco = $request->input('database') ?? $request->input('banco');
+        $usuario = $request->input('user') ?? $request->input('usuario_leitura') ?? $request->input('usuario');
+        $senha = $request->input('password') ?? $request->input('senha');
+        $descricao = $request->input('description') ?? $request->input('descricao') ?? '';
+        $ativa = $request->input('active') ?? $request->input('ativa') ?? true;
+        $status = $request->input('status') ?? 'online';
+        $rawUnitId = $request->input('unitId') ?? $request->input('unidade_id') ?? 1;
         $unidadeId = (int) str_replace('u', '', (string) $rawUnitId);
 
+        $request->merge([
+            'nome' => $nome,
+            'tipo' => $tipo,
+            'host' => $host,
+            'porta' => (int) $porta,
+            'banco' => $banco,
+            'usuario_leitura' => $usuario,
+            'senha' => $senha,
+            'descricao' => $descricao,
+            'unidade_id' => $unidadeId,
+        ]);
+
+        $validated = $request->validate([
+            'nome' => 'required|string|max:150',
+            'tipo' => 'required|in:MySQL,MariaDB,PostgreSQL,SQL Server,Oracle',
+            'host' => 'required|string|max:255',
+            'porta' => 'required|integer',
+            'banco' => 'required|string|max:150',
+            'usuario_leitura' => 'required|string|max:150',
+            'senha' => 'nullable|string',
+            'descricao' => 'nullable|string',
+            'unidade_id' => 'required|integer',
+        ]);
+
+        $unidade = \App\Models\Unidade::find($validated['unidade_id']) ?: \App\Models\Unidade::first();
+        if (!$unidade) {
+            $unidade = \App\Models\Unidade::create([
+                'codigo' => 'MAT-001',
+                'nome' => 'Matriz',
+                'descricao' => 'Unidade Padrão',
+                'ativa' => true,
+            ]);
+        }
+
         $connection = new Conexao();
-        $connection->unidade_id = $unidadeId;
+        $connection->unidade_id = $unidade->id;
         $connection->nome = $validated['nome'];
         $connection->tipo = $validated['tipo'];
         $connection->host = $validated['host'];
-        $connection->porta = $validated['porta'] ?? $validated['port'] ?? 3306;
-        $connection->banco = $validated['banco'] ?? $validated['database'] ?? '';
-        $connection->usuario_leitura = $validated['usuario_leitura'] ?? $validated['user'] ?? '';
-        $connection->senha = $validated['password'] ?? 'default';
+        $connection->porta = (int) $validated['porta'];
+        $connection->banco = $validated['banco'];
+        $connection->usuario_leitura = $validated['usuario_leitura'];
+        if (!empty($validated['senha'])) {
+            $connection->senha_cifrada = Crypt::encryptString($validated['senha']);
+        }
         $connection->descricao = $validated['descricao'] ?? '';
-        $connection->ativa = $validated['ativa'] ?? true;
-        $connection->status = $validated['status'] ?? 'online';
+        $connection->ativa = filter_var($ativa, FILTER_VALIDATE_BOOLEAN);
+        $connection->status = in_array($status, ['online', 'offline', 'instavel', 'nao_testada']) ? $status : 'online';
         $connection->ultima_verificacao = Carbon::now();
         $connection->save();
 
@@ -79,46 +107,36 @@ class DbConnectionController extends Controller
         $id = (int) str_replace('c', '', $id);
         $connection = Conexao::findOrFail($id);
 
-        $validated = $request->validate([
-            'nome' => 'sometimes|string|max:150',
-            'unitId' => 'sometimes',
-            'unidade_id' => 'sometimes',
-            'tipo' => 'sometimes|in:MySQL,MariaDB,PostgreSQL,SQL Server,Oracle',
-            'host' => 'sometimes|string|max:255',
-            'port' => 'sometimes|integer',
-            'porta' => 'sometimes|integer',
-            'database' => 'sometimes|string|max:150',
-            'banco' => 'sometimes|string|max:150',
-            'user' => 'sometimes|string|max:150',
-            'usuario_leitura' => 'sometimes|string|max:150',
-            'password' => 'nullable|string',
-            'descricao' => 'nullable|string',
-            'ativa' => 'boolean',
-            'status' => 'sometimes|in:nao_testada,online,offline,instavel',
-        ]);
+        $nome = $request->input('name') ?? $request->input('nome');
+        $tipo = $request->input('type') ?? $request->input('tipo');
+        $host = $request->input('host');
+        $porta = $request->input('port') ?? $request->input('porta');
+        $banco = $request->input('database') ?? $request->input('banco');
+        $usuario = $request->input('user') ?? $request->input('usuario_leitura') ?? $request->input('usuario');
+        $senha = $request->input('password') ?? $request->input('senha');
+        $descricao = $request->input('description') ?? $request->input('descricao');
+        $ativa = $request->input('active') ?? $request->input('ativa');
+        $status = $request->input('status');
+        $rawUnitId = $request->input('unitId') ?? $request->input('unidade_id');
 
-        if (isset($validated['unitId']) || isset($validated['unidade_id'])) {
-            $rawUnitId = $validated['unitId'] ?? $validated['unidade_id'];
-            $connection->unidade_id = (int) str_replace('u', '', (string) $rawUnitId);
+        if ($nome !== null) $connection->nome = $nome;
+        if ($tipo !== null) $connection->tipo = $tipo;
+        if ($host !== null) $connection->host = $host;
+        if ($porta !== null) $connection->porta = (int) $porta;
+        if ($banco !== null) $connection->banco = $banco;
+        if ($usuario !== null) $connection->usuario_leitura = $usuario;
+        if (!empty($senha)) {
+            $connection->senha_cifrada = Crypt::encryptString($senha);
         }
-        if (isset($validated['nome'])) $connection->nome = $validated['nome'];
-        if (isset($validated['tipo'])) $connection->tipo = $validated['tipo'];
-        if (isset($validated['host'])) $connection->host = $validated['host'];
-        if (isset($validated['port']) || isset($validated['porta'])) {
-            $connection->porta = $validated['porta'] ?? $validated['port'];
+        if ($descricao !== null) $connection->descricao = $descricao;
+        if ($ativa !== null) $connection->ativa = filter_var($ativa, FILTER_VALIDATE_BOOLEAN);
+        if ($status !== null) $connection->status = $status;
+        if ($rawUnitId !== null) {
+            $uId = (int) str_replace('u', '', (string) $rawUnitId);
+            if (\App\Models\Unidade::where('id', $uId)->exists()) {
+                $connection->unidade_id = $uId;
+            }
         }
-        if (isset($validated['banco']) || isset($validated['database'])) {
-            $connection->banco = $validated['banco'] ?? $validated['database'];
-        }
-        if (isset($validated['usuario_leitura']) || isset($validated['user'])) {
-            $connection->usuario_leitura = $validated['usuario_leitura'] ?? $validated['user'];
-        }
-        if (!empty($validated['password'])) {
-            $connection->senha = $validated['password'];
-        }
-        if (isset($validated['descricao'])) $connection->descricao = $validated['descricao'];
-        if (isset($validated['status'])) $connection->status = $validated['status'];
-        if (isset($validated['ativa'])) $connection->ativa = $validated['ativa'];
 
         $connection->save();
 
@@ -129,8 +147,17 @@ class DbConnectionController extends Controller
     {
         $id = (int) str_replace('c', '', $id);
         $connection = Conexao::findOrFail($id);
-        $connection->update(['ativa' => false]);
-        return response()->json(['message' => 'Configuração de conexão desativada com sucesso.']);
+
+        try {
+            \App\Models\Lancamento::where('conexao_id', $connection->id)->delete();
+            VerificacaoConexao::where('conexao_id', $connection->id)->delete();
+            \App\Models\Sincronizacao::where('conexao_id', $connection->id)->delete();
+            $connection->delete();
+            return response()->json(['message' => 'Configuração de conexão excluída com sucesso.']);
+        } catch (\Throwable) {
+            $connection->update(['ativa' => false]);
+            return response()->json(['message' => 'Configuração de conexão desativada com sucesso.']);
+        }
     }
 
     public function test(Request $request, string $id): JsonResponse

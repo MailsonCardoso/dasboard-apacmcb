@@ -8,20 +8,63 @@ export const connectionsService = {
   list: () => apiGet<DbConnection[]>("/connections", []),
 
   create: async (data: Partial<DbConnection> & { password?: string }) => {
-    return apiPost<DbConnection>("/connections", data, {
+    const payload = {
+      name: data.name,
+      nome: data.name,
+      unitId: data.unitId,
+      unidade_id: data.unitId ? Number(String(data.unitId).replace(/\D/g, "")) : 1,
+      type: data.type,
+      tipo: data.type,
+      host: data.host,
+      port: Number(data.port) || 3306,
+      porta: Number(data.port) || 3306,
+      database: data.database,
+      banco: data.database,
+      user: data.user,
+      usuario_leitura: data.user,
+      password: data.password,
+      description: data.description,
+      descricao: data.description,
+      status: data.status || "online",
+      active: true,
+      ativa: true,
+    };
+    return apiPost<DbConnection>("/connections", payload, {
       ...data,
       id: `c${Date.now()}`,
-      status: "nao_testada",
+      status: "online",
       lastCheck: new Date().toISOString().slice(0, 19),
     } as DbConnection);
   },
 
   update: async (id: string, data: Partial<DbConnection> & { password?: string }) => {
-    return apiPost<DbConnection>(`/connections/${id}`, { ...data, _method: "PUT" }, data as DbConnection);
+    const cleanId = String(id).replace(/^c/, "");
+    const payload = {
+      name: data.name,
+      nome: data.name,
+      unitId: data.unitId,
+      unidade_id: data.unitId ? Number(String(data.unitId).replace(/\D/g, "")) : undefined,
+      type: data.type,
+      tipo: data.type,
+      host: data.host,
+      port: data.port ? Number(data.port) : undefined,
+      porta: data.port ? Number(data.port) : undefined,
+      database: data.database,
+      banco: data.database,
+      user: data.user,
+      usuario_leitura: data.user,
+      password: data.password,
+      description: data.description,
+      descricao: data.description,
+      status: data.status,
+      _method: "PUT",
+    };
+    return apiPost<DbConnection>(`/connections/${cleanId}`, payload, data as DbConnection);
   },
 
   delete: async (id: string) => {
-    return apiPost<{ message: string }>(`/connections/${id}`, { _method: "DELETE" }, { message: "Conexão desativada com sucesso." });
+    const cleanId = String(id).replace(/^c/, "");
+    return apiPost<{ message: string }>(`/connections/${cleanId}/delete`, { _method: "DELETE" }, { message: "Conexão desativada com sucesso." });
   },
 
   /** POST /connections/:id/test — verificação de conectividade */

@@ -61,26 +61,38 @@ export async function apiPost<T>(path: string, body: unknown, fallback: T): Prom
     const url = `${API_URL}${cleanPath}`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    const methodOverride = (body && typeof body === "object" && "_method" in body)
+      ? String((body as Record<string, unknown>)._method).toUpperCase()
+      : undefined;
+
+    const headers: Record<string, string> = {
+      ...getAuthHeaders(),
+      "Content-Type": "application/json",
+    };
+    if (methodOverride) {
+      headers["X-HTTP-Method-Override"] = methodOverride;
+    }
 
     const res = await fetch(url, {
       method: "POST",
       signal: controller.signal,
-      headers: {
-        ...getAuthHeaders(),
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(body ?? {}),
     });
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
+      const errText = await res.text().catch(() => "");
+      console.error(`[API Error] HTTP ${res.status} on POST ${cleanPath}:`, errText);
+      throw new Error(`HTTP ${res.status}: ${errText}`);
     }
 
     const json = await res.json();
     return (json && typeof json === "object" && "data" in json ? json.data : json) as T;
-  } catch {
+  } catch (err) {
+    console.warn(`[API Fallback] Request to ${path} failed, falling back:`, err);
     return simulate(fallback);
   }
 }

@@ -90,6 +90,54 @@ class FinanceApiTest extends TestCase
         $response->assertJsonStructure(['ok', 'total_connections', 'processed', 'message']);
     }
 
+    public function test_can_create_update_and_delete_connection(): void
+    {
+        $uniqueName = 'Nova Conexão ' . time();
+        $payload = [
+            'name' => $uniqueName,
+            'unitId' => '1',
+            'type' => 'MySQL',
+            'host' => '192.168.1.50',
+            'port' => 3306,
+            'database' => 'banco_novo',
+            'user' => 'novo_user',
+            'password' => 'Senha123!',
+            'description' => 'Conexão teste para persistência',
+            'status' => 'online',
+        ];
+
+        // 1. Criar conexão
+        $createRes = $this->postJson('/api/connections', $payload);
+        $createRes->assertStatus(201)
+                  ->assertJsonFragment(['name' => $uniqueName]);
+
+        $createdId = $createRes->json('id');
+        $this->assertNotEmpty($createdId);
+
+        // 2. Verificar que persiste no GET
+        $listRes = $this->getJson('/api/connections');
+        $listRes->assertStatus(200);
+        $found = collect($listRes->json())->firstWhere('name', $uniqueName);
+        $this->assertNotNull($found, 'A conexão criada deve constar no banco de dados após a criação');
+
+        // 3. Atualizar conexão
+        $updateRes = $this->postJson("/api/connections/{$createdId}/update", [
+            'name' => $uniqueName . ' Editada',
+            'database' => 'banco_editado',
+        ]);
+        $updateRes->assertStatus(200)
+                  ->assertJsonFragment(['name' => $uniqueName . ' Editada']);
+
+        // 4. Excluir conexão
+        $deleteRes = $this->postJson("/api/connections/{$createdId}/delete");
+        $deleteRes->assertStatus(200);
+
+        // 5. Verificar que foi removida da listagem
+        $afterListRes = $this->getJson('/api/connections');
+        $stillThere = collect($afterListRes->json())->firstWhere('id', (string) $createdId);
+        $this->assertNull($stillThere, 'A conexão excluída não deve mais aparecer');
+    }
+
     public function test_can_list_incomes(): void
     {
         $response = $this->getJson('/api/incomes?year=2026&month=11');

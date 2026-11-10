@@ -38,6 +38,8 @@ Route::apiResource('units', UnitController::class);
 Route::post('connections/sync', [DbConnectionController::class, 'syncAll']);
 Route::post('connections/{id}/test', [DbConnectionController::class, 'test']);
 Route::post('connections/{id}/sync', [DbConnectionController::class, 'sync']);
+Route::post('connections/{id}/update', [DbConnectionController::class, 'update']);
+Route::post('connections/{id}/delete', [DbConnectionController::class, 'destroy']);
 Route::apiResource('connections', DbConnectionController::class);
 
 // Receitas e Despesas (consultas sobre a tabela unificada 'lancamentos' e views)
