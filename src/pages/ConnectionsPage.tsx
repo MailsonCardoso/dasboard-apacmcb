@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Eye, EyeOff, Info, Loader2, Pencil, Plug, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Info, Loader2, Pencil, Plug, Plus, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +25,7 @@ type Draft = Omit<DbConnection, "id" | "lastCheck" | "passwordMask"> & { id?: st
 const empty = (unitId: string): Draft => ({ name: "", unitId, type: "MySQL", host: "", port: 3306, database: "", user: "", password: "", description: "", status: "online" });
 
 export function ConnectionsPage() {
+  const queryClient = useQueryClient();
   const { unitId } = useFilters();
   const { connections: initial, units, unitName } = useFinanceData();
   // Somente o cadastro de configuração do FinanceControl (em memória). Senhas nunca são persistidas no navegador.
@@ -33,6 +35,7 @@ export function ConnectionsPage() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [del, setDel] = useState<DbConnection | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState<string | null>(null);
 
   const test = async (c: DbConnection) => {
     setTesting(c.id);
@@ -41,6 +44,25 @@ export function ConnectionsPage() {
     const now = new Date().toISOString().slice(0, 19);
     setList((l) => l.map((x) => (x.id === c.id ? { ...x, lastCheck: now } : x)));
     res.ok ? toast.success(`${c.name}: ${res.message}`) : toast.error(`${c.name}: ${res.message}`);
+  };
+
+  const sync = async (c: DbConnection) => {
+    setSyncing(c.id);
+    try {
+      const res = await connectionsService.sync(c.id);
+      const now = new Date().toISOString().slice(0, 19);
+      setList((l) => l.map((x) => (x.id === c.id ? { ...x, lastCheck: now } : x)));
+      if (res.ok) {
+        toast.success(`${c.name}: ${res.message}`);
+        queryClient.invalidateQueries();
+      } else {
+        toast.error(`${c.name}: ${res.message}`);
+      }
+    } catch {
+      toast.error(`${c.name}: Erro ao executar sincronização.`);
+    } finally {
+      setSyncing(null);
+    }
   };
 
   const save = async () => {
@@ -91,12 +113,15 @@ export function ConnectionsPage() {
       key: "actions", header: "Ações", align: "right",
       render: (r) => (
         <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-          <Button variant="ghost" size="icon" className="size-8" aria-label="Detalhes" onClick={() => { setShowPwd(false); setView(r); }}><Info /></Button>
-          <Button variant="ghost" size="icon" className="size-8" aria-label="Testar conexão" onClick={() => test(r)} disabled={testing === r.id}>
+          <Button variant="ghost" size="icon" className="size-8" title="Detalhes da conexão" aria-label="Detalhes" onClick={() => { setShowPwd(false); setView(r); }}><Info /></Button>
+          <Button variant="ghost" size="icon" className="size-8" title="Testar conectividade" aria-label="Testar conexão" onClick={() => test(r)} disabled={testing === r.id}>
             {testing === r.id ? <Loader2 className="animate-spin" /> : <Plug />}
           </Button>
-          <Button variant="ghost" size="icon" className="size-8" aria-label="Editar configuração" onClick={() => setDraft({ ...r, password: "" })}><Pencil /></Button>
-          <Button variant="ghost" size="icon" className="size-8 text-expense" aria-label="Excluir cadastro" onClick={() => setDel(r)}><Trash2 /></Button>
+          <Button variant="ghost" size="icon" className="size-8 text-primary" title="Sincronizar dados remotos" aria-label="Sincronizar dados" onClick={() => sync(r)} disabled={syncing === r.id}>
+            {syncing === r.id ? <Loader2 className="animate-spin" /> : <RefreshCw className="size-4" />}
+          </Button>
+          <Button variant="ghost" size="icon" className="size-8" title="Editar configuração" aria-label="Editar configuração" onClick={() => setDraft({ ...r, password: "" })}><Pencil /></Button>
+          <Button variant="ghost" size="icon" className="size-8 text-expense" title="Excluir conexão" aria-label="Excluir cadastro" onClick={() => setDel(r)}><Trash2 /></Button>
         </div>
       ),
     },
@@ -145,6 +170,18 @@ export function ConnectionsPage() {
                 </dd>
               </div>
             </dl>
+          )}
+          {view && (
+            <DialogFooter className="mt-4 flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => test(view)} disabled={testing === view.id}>
+                {testing === view.id ? <Loader2 className="mr-1 size-4 animate-spin" /> : <Plug className="mr-1 size-4" />}
+                Testar conexão
+              </Button>
+              <Button size="sm" onClick={() => sync(view)} disabled={syncing === view.id}>
+                {syncing === view.id ? <Loader2 className="mr-1 size-4 animate-spin" /> : <RefreshCw className="mr-1 size-4" />}
+                Sincronizar dados
+              </Button>
+            </DialogFooter>
           )}
         </DialogContent>
       </Dialog>

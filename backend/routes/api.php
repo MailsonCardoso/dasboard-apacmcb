@@ -36,6 +36,7 @@ Route::apiResource('units', UnitController::class);
 
 // Conexões de Banco de Dados
 Route::post('connections/{id}/test', [DbConnectionController::class, 'test']);
+Route::post('connections/{id}/sync', [DbConnectionController::class, 'sync']);
 Route::apiResource('connections', DbConnectionController::class);
 
 // Receitas e Despesas (consultas sobre a tabela unificada 'lancamentos' e views)

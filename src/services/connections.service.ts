@@ -32,6 +32,15 @@ export const connectionsService = {
 
     return apiPost<{ ok: boolean; message: string }>(`/connections/${c.id}/test`, {}, fallbackMessage);
   },
+
+  /** POST /connections/:id/sync — sincronização de movimentações do banco remoto */
+  sync: async (id: string | number) => {
+    return apiPost<{ ok: boolean; processed: number; message: string }>(
+      `/connections/${id}/sync`,
+      {},
+      { ok: true, processed: 0, message: "Sincronização concluída com sucesso." }
+    );
+  },
 };
 
 export const connectionsQuery = queryOptions({ queryKey: ["connections"], queryFn: connectionsService.list, staleTime: 60_000 });

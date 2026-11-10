@@ -73,6 +73,16 @@ class FinanceApiTest extends TestCase
                  ->assertJsonStructure(['ok', 'message', 'lastCheck']);
     }
 
+    public function test_can_sync_connection(): void
+    {
+        $conexao = \App\Models\Conexao::first();
+        if ($conexao) {
+            $response = $this->postJson("/api/connections/{$conexao->id}/sync");
+            $response->assertStatus(200)
+                     ->assertJsonStructure(['ok', 'processed', 'message']);
+        }
+    }
+
     public function test_can_list_incomes(): void
     {
         $response = $this->getJson('/api/incomes?year=2026&month=11');

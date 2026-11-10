@@ -213,4 +213,14 @@ class DbConnectionController extends Controller
             'lastCheck' => $now->toIso8601String(),
         ]);
     }
+
+    public function sync(Request $request, string $id, \App\Services\UnitDatabaseSyncService $syncService): JsonResponse
+    {
+        $id = (int) str_replace('c', '', $id);
+        $connection = Conexao::findOrFail($id);
+
+        $result = $syncService->syncConnection($connection);
+
+        return response()->json($result, $result['ok'] ? 200 : 422);
+    }
 }
