@@ -117,6 +117,9 @@ const htaccessContent = `# =====================================================
 # Apache / LiteSpeed - Configuração de Hospedagem cPanel (SPA React)
 # ==============================================================================
 
+# Garante que qualquer 404 seja entregue pelo index.html da SPA (evita página de erro cPanel com scripts inseguros)
+ErrorDocument 404 /index.html
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -130,8 +133,8 @@ const htaccessContent = `# =====================================================
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # Todas as rotas do frontend React redirecionam para index.html
-  RewriteRule ^ index.html [L]
+  # Todas as rotas do frontend React redirecionam para /index.html
+  RewriteRule ^(.*)$ /index.html [L,QSA]
 </IfModule>
 
 # Compressão de arquivos para carregamento rápido
@@ -154,6 +157,7 @@ const htaccessContent = `# =====================================================
 `;
 
 fs.writeFileSync(path.join(distDir, ".htaccess"), htaccessContent, "utf-8");
+fs.writeFileSync(path.join(distDir, "htaccess.txt"), htaccessContent, "utf-8");
 
 // 7. Validação do Build: Verifica referências do index.html e manifest
 console.log("\n==================================================");
