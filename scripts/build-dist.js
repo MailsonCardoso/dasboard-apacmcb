@@ -43,7 +43,7 @@ if (!mainJs || !mainCss) {
 
 // 5. Gera dist/index.html otimizado para SPA no cPanel
 const indexHtmlContent = `<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" suppressHydrationWarning>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -90,7 +90,7 @@ const indexHtmlContent = `<!DOCTYPE html>
       };
     </script>
   </head>
-  <body>
+  <body suppressHydrationWarning>
     <div id="root"></div>
 
     <!-- Registro de Service Worker PWA -->
