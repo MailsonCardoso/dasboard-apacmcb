@@ -15,6 +15,7 @@ import { Route as ComparativoRouteImport } from './routes/comparativo'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as DespesasRouteImport } from './routes/despesas'
 import { Route as FluxoDeCaixaRouteImport } from './routes/fluxo-de-caixa'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ReceitasRouteImport } from './routes/receitas'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as UnidadesRouteImport } from './routes/unidades'
@@ -49,6 +50,11 @@ const FluxoDeCaixaRoute = FluxoDeCaixaRouteImport.update({
   path: '/fluxo-de-caixa',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReceitasRoute = ReceitasRouteImport.update({
   id: '/receitas',
   path: '/receitas',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof ConfiguracoesRoute
   '/despesas': typeof DespesasRoute
   '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
+  '/login': typeof LoginRoute
   '/receitas': typeof ReceitasRoute
   '/relatorios': typeof RelatoriosRoute
   '/unidades': typeof UnidadesRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ConfiguracoesRoute
   '/despesas': typeof DespesasRoute
   '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
+  '/login': typeof LoginRoute
   '/receitas': typeof ReceitasRoute
   '/relatorios': typeof RelatoriosRoute
   '/unidades': typeof UnidadesRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/configuracoes': typeof ConfiguracoesRoute
   '/despesas': typeof DespesasRoute
   '/fluxo-de-caixa': typeof FluxoDeCaixaRoute
+  '/login': typeof LoginRoute
   '/receitas': typeof ReceitasRoute
   '/relatorios': typeof RelatoriosRoute
   '/unidades': typeof UnidadesRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/despesas'
     | '/fluxo-de-caixa'
+    | '/login'
     | '/receitas'
     | '/relatorios'
     | '/unidades'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/despesas'
     | '/fluxo-de-caixa'
+    | '/login'
     | '/receitas'
     | '/relatorios'
     | '/unidades'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/despesas'
     | '/fluxo-de-caixa'
+    | '/login'
     | '/receitas'
     | '/relatorios'
     | '/unidades'
@@ -142,6 +154,7 @@ export interface RootRouteChildren {
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   DespesasRoute: typeof DespesasRoute
   FluxoDeCaixaRoute: typeof FluxoDeCaixaRoute
+  LoginRoute: typeof LoginRoute
   ReceitasRoute: typeof ReceitasRoute
   RelatoriosRoute: typeof RelatoriosRoute
   UnidadesRoute: typeof UnidadesRoute
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FluxoDeCaixaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/receitas': {
       id: '/receitas'
       path: '/receitas'
@@ -222,6 +242,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracoesRoute: ConfiguracoesRoute,
   DespesasRoute: DespesasRoute,
   FluxoDeCaixaRoute: FluxoDeCaixaRoute,
+  LoginRoute: LoginRoute,
   ReceitasRoute: ReceitasRoute,
   RelatoriosRoute: RelatoriosRoute,
   UnidadesRoute: UnidadesRoute,

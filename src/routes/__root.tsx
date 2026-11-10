@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
@@ -15,6 +16,8 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { FiltersProvider } from "@/hooks/use-filters";
 import { preloadFinance } from "@/hooks/use-finance-data";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { LoginPage } from "@/pages/LoginPage";
 import { AppLayout } from "@/layouts/AppLayout";
 
 function NotFoundComponent() {
@@ -128,18 +131,47 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function RootContent() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Rota de login direta
+  if (path === "/login") {
+    return <Outlet />;
+  }
+
+  // Enquanto valida sessão persistida no cliente
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  // Se não estiver autenticado, apresenta tela de login
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  return (
+    <FiltersProvider>
+      <AppLayout>
+        <Outlet />
+      </AppLayout>
+    </FiltersProvider>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <FiltersProvider>
-        <AppLayout>
-          <Outlet />
-        </AppLayout>
+      <AuthProvider>
+        <RootContent />
         <Toaster richColors position="top-right" />
-      </FiltersProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

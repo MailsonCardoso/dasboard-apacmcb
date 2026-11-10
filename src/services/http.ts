@@ -9,6 +9,23 @@ export const API_URL =
   import.meta.env["VITE_API_URL"] ||
   "/api";
 
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+  };
+  if (typeof window !== "undefined") {
+    try {
+      const token = localStorage.getItem("fc_auth_token");
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }
+  return headers;
+}
+
 export function simulate<T>(data: T, ms = 120): Promise<T> {
   return new Promise((resolve) => setTimeout(() => resolve(structuredClone(data)), ms));
 }
@@ -23,9 +40,7 @@ export async function apiGet<T>(path: string, fallback: T): Promise<T> {
 
     const res = await fetch(url, {
       signal: controller.signal,
-      headers: {
-        Accept: "application/json",
-      },
+      headers: getAuthHeaders(),
     });
     clearTimeout(timeoutId);
 
@@ -52,8 +67,8 @@ export async function apiPost<T>(path: string, body: unknown, fallback: T): Prom
       method: "POST",
       signal: controller.signal,
       headers: {
+        ...getAuthHeaders(),
         "Content-Type": "application/json",
-        Accept: "application/json",
       },
       body: JSON.stringify(body ?? {}),
     });

@@ -1,0 +1,1 @@
+import{w as e}from"./index-Cdgn4gMO.js";var t=e;export{t as component};

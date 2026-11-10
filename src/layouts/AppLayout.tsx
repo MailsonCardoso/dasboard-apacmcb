@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Bell, BarChart3, Building2, Database, FileBarChart, GitCompareArrows, LayoutDashboard, Settings, TrendingDown, TrendingUp, Waves, ShieldCheck, LogOut, User,
 } from "lucide-react";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { UnitSelect, CompetenceSelect } from "@/components/finance/Selectors";
 import { useFilters } from "@/hooks/use-filters";
 import { useFinanceData } from "@/hooks/use-finance-data";
+import { useAuth } from "@/hooks/use-auth";
 import { formatDateTime } from "@/utils/format";
 
 const nav = [
@@ -66,10 +67,10 @@ function AppSidebar() {
         </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border p-4">
+      <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">
         <div className="flex items-center gap-2 text-xs leading-relaxed group-data-[collapsible=icon]:hidden">
           <ShieldCheck className="size-4 shrink-0 text-sidebar-foreground" />
-          <span>Acesso somente leitura aos bancos de origem</span>
+          <span>Acesso somente leitura</span>
         </div>
       </SidebarFooter>
     </Sidebar>
@@ -111,9 +112,28 @@ function Notifications() {
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const f = useFilters();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const showPeriod = !["/configuracoes", "/bancos-de-dados", "/unidades"].includes(path);
   const showUnit = !["/configuracoes", "/comparativo"].includes(path);
+
+  const userName = user?.nome || "Mailson Cardoso";
+  const userRole = user?.perfil || "Controller";
+  const initials =
+    userName
+      .split(" ")
+      .map((n) => n[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "MC";
+
+  const handleLogout = async () => {
+    await logout();
+    navigate({ to: "/login" });
+  };
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
@@ -129,18 +149,33 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="gap-2 px-2" aria-label="Perfil do usuário">
-                    <span className="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">MC</span>
+                    <span className="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">{initials}</span>
                     <span className="hidden text-left text-sm leading-tight xl:block">
-                      <span className="block font-medium">Mailson Cardoso</span>
-                      <span className="text-muted-foreground">Controller</span>
+                      <span className="block font-medium">{userName}</span>
+                      <span className="text-muted-foreground">{userRole}</span>
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{userName}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user?.email || "admin@apacmcb.org.br"}</p>
+                    </div>
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild><Link to="/configuracoes"><User /> Perfil e preferências</Link></DropdownMenuItem>
-                  <DropdownMenuItem disabled><LogOut /> Sair (demonstração)</DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/configuracoes">
+                      <User className="mr-2 size-4" /> Perfil e preferências
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer font-medium"
+                  >
+                    <LogOut className="mr-2 size-4" /> Sair do sistema
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               </div>
