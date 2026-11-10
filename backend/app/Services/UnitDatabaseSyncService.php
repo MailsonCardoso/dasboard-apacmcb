@@ -40,7 +40,16 @@ class UnitDatabaseSyncService
         $processed = 0;
 
         try {
-            $dsn = "mysql:host={$conexao->host};port={$conexao->porta};dbname={$conexao->banco};charset=utf8mb4";
+            $tipo = strtolower(str_replace(' ', '', (string) $conexao->tipo));
+            if ($tipo === 'postgresql') {
+                $dsn = "pgsql:host={$conexao->host};port={$conexao->porta};dbname={$conexao->banco}";
+            } elseif ($tipo === 'sqlserver') {
+                $dsn = "sqlsrv:Server={$conexao->host},{$conexao->porta};Database={$conexao->banco}";
+            } else {
+                // MySQL / MariaDB (padrão)
+                $dsn = "mysql:host={$conexao->host};port={$conexao->porta};dbname={$conexao->banco};charset=utf8mb4";
+            }
+
             $pdo = new PDO($dsn, $conexao->usuario_leitura, $decryptedPassword, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
