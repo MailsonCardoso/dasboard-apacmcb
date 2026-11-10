@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { execSync } from "node:child_process";
 
 const rootDir = process.cwd();
 const outputPublicDir = path.join(rootDir, ".output", "public");
@@ -117,9 +118,16 @@ const htaccessContent = `# =====================================================
 # Apache / LiteSpeed - Configuração de Hospedagem cPanel (SPA React)
 # ==============================================================================
 
-# Garante que qualquer 404 seja entregue pelo index.html da SPA (evita página de erro cPanel com scripts inseguros)
+# 1. Fallback caso ocorra 404 (evita página de erro padrão cPanel com scripts inseguros)
 ErrorDocument 404 /index.html
 
+# 2. Apache 2.4+ Roteamento Nativo SPA
+<IfModule mod_dir.c>
+  DirectoryIndex index.html
+  FallbackResource /index.html
+</IfModule>
+
+# 3. Reescruta mod_rewrite (compatibilidade total)
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -137,12 +145,12 @@ ErrorDocument 404 /index.html
   RewriteRule ^(.*)$ /index.html [L,QSA]
 </IfModule>
 
-# Compressão de arquivos para carregamento rápido
+# 4. Compressão de arquivos para carregamento rápido
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json application/manifest+json
 </IfModule>
 
-# Controle de Cache: arquivos com hash ficam em cache longo; HTML/PWA sem cache
+# 5. Controle de Cache: arquivos com hash ficam em cache longo; HTML/PWA sem cache
 <IfModule mod_headers.c>
   <FilesMatch "\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
     Header set Cache-Control "max-age=31536000, public, immutable"
@@ -227,3 +235,13 @@ console.log("\n==================================================");
 console.log("🎉 Build validado com 100% de sucesso para cPanel!");
 console.log("Pasta dist/ pronta para envio direto ao public_html.");
 console.log("==================================================\n");
+
+// 8. Gera pacote dist.zip (incluindo .htaccess) para upload e descompactação rápida no cPanel
+try {
+  if (process.platform === "win32") {
+    execSync(`powershell -NoProfile -Command "Compress-Archive -Path dist\\* -DestinationPath dist.zip -Force"`, { stdio: "inherit" });
+    console.log("📦 Pacote 'dist.zip' gerado com sucesso na raiz do projeto (perfeito para upload direto no cPanel)!\n");
+  }
+} catch (err) {
+  console.warn("Aviso ao compactar dist.zip:", err.message);
+}
