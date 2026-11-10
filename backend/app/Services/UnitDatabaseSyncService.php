@@ -72,8 +72,10 @@ class UnitDatabaseSyncService
 
             // 2. Sincronização de transactions (Caixa Consolidado / Efetivado)
             $transRows = $pdo->query("SELECT * FROM transactions ORDER BY date ASC, id ASC")->fetchAll();
+            $activeTransIds = [];
 
             foreach ($transRows as $t) {
+                $activeTransIds[] = (string) $t['id'];
                 $tipo = ($t['type'] === 'saida') ? 'despesa' : 'receita';
                 $nomeCat = !empty($t['category_name']) ? trim($t['category_name']) : ($tipo === 'receita' ? 'Receitas Diversas' : 'Outras Despesas');
 
@@ -104,6 +106,14 @@ class UnitDatabaseSyncService
                 );
                 $processed++;
             }
+
+            // Remove movimentações de caixa que foram excluídas no banco remoto
+            $transDelQuery = Lancamento::where('conexao_id', $conexao->id)
+                ->where('entidade_origem', 'transactions');
+            if (!empty($activeTransIds)) {
+                $transDelQuery->whereNotIn('id_origem', $activeTransIds);
+            }
+            $transDelQuery->delete();
 
             // 3. Sincronização de mensalidades PENDENTES ou ATRASADAS (A Receber)
             // (As mensalidades pagas já foram sincronizadas via 'transactions')
@@ -144,12 +154,14 @@ class UnitDatabaseSyncService
                     $processed++;
                 }
 
-                // Remove mensalidades pendentes anteriores que foram quitadas na origem
-                Lancamento::where('conexao_id', $conexao->id)
+                // Remove mensalidades pendentes anteriores que foram quitadas ou excluídas na origem
+                $mensDelQuery = Lancamento::where('conexao_id', $conexao->id)
                     ->where('entidade_origem', 'mensalidades')
-                    ->where('tipo', 'receita')
-                    ->whereNotIn('id_origem', $activePendingMensalidadeIds)
-                    ->delete();
+                    ->where('tipo', 'receita');
+                if (!empty($activePendingMensalidadeIds)) {
+                    $mensDelQuery->whereNotIn('id_origem', $activePendingMensalidadeIds);
+                }
+                $mensDelQuery->delete();
             } catch (\Throwable) {
                 // Tabela mensalidades pode não existir em outros bancos
             }
@@ -193,11 +205,13 @@ class UnitDatabaseSyncService
                     $processed++;
                 }
 
-                Lancamento::where('conexao_id', $conexao->id)
+                $revDelQuery = Lancamento::where('conexao_id', $conexao->id)
                     ->where('entidade_origem', 'revenues')
-                    ->where('tipo', 'receita')
-                    ->whereNotIn('id_origem', $activePendingRevIds)
-                    ->delete();
+                    ->where('tipo', 'receita');
+                if (!empty($activePendingRevIds)) {
+                    $revDelQuery->whereNotIn('id_origem', $activePendingRevIds);
+                }
+                $revDelQuery->delete();
             } catch (\Throwable) {
             }
 
@@ -240,11 +254,13 @@ class UnitDatabaseSyncService
                     $processed++;
                 }
 
-                Lancamento::where('conexao_id', $conexao->id)
+                $expDelQuery = Lancamento::where('conexao_id', $conexao->id)
                     ->where('entidade_origem', 'expenses')
-                    ->where('tipo', 'despesa')
-                    ->whereNotIn('id_origem', $activePendingExpIds)
-                    ->delete();
+                    ->where('tipo', 'despesa');
+                if (!empty($activePendingExpIds)) {
+                    $expDelQuery->whereNotIn('id_origem', $activePendingExpIds);
+                }
+                $expDelQuery->delete();
             } catch (\Throwable) {
             }
 
