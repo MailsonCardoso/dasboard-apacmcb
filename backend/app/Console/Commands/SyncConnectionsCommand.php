@@ -43,3 +43,4 @@ class SyncConnectionsCommand extends Command
         return Command::SUCCESS;
     }
 }
+

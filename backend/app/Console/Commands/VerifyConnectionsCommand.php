@@ -104,3 +104,4 @@ class VerifyConnectionsCommand extends Command
         return Command::SUCCESS;
     }
 }
+
