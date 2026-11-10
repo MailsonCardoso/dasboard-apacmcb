@@ -4,7 +4,10 @@
  * Em ambiente offline ou caso a API não responda, recorre de forma transparente
  * aos dados simulados (fallback), mantendo a experiência e testes 100% íntegros.
  */
-export const API_URL = import.meta.env["VITE_API_URL"] ?? "/api";
+export const API_URL =
+  (typeof window !== "undefined" && (window as unknown as { __VITE_API_URL?: string }).__VITE_API_URL) ||
+  import.meta.env["VITE_API_URL"] ||
+  "/api";
 
 export function simulate<T>(data: T, ms = 120): Promise<T> {
   return new Promise((resolve) => setTimeout(() => resolve(structuredClone(data)), ms));

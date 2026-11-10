@@ -5,18 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>FinanceControl — Gestão financeira multiunidade</title>
     <meta name="description" content="Consulta centralizada e somente leitura das finanças de todas as unidades." />
-    <meta property="og:title" content="FinanceControl" />
+    <meta name="theme-color" content="#182754" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- Open Graph / Meta -->
+    <meta property="og:title" content="FinanceControl — Gestão financeira multiunidade" />
     <meta property="og:description" content="Consulta centralizada e somente leitura das finanças de todas as unidades." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- PWA / Manifest / Ícones -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="64x64" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Fontes Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" />
+
+    <!-- Estilos CSS Compilados -->
     <link rel="stylesheet" href="/assets/styles-BxCky1ZU.css" />
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/assets/index-CLxGLuwF.js"></script>
+
+    <!-- Registro de Service Worker PWA -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').catch(function(err) {
+            console.debug('Service Worker não registrado:', err);
+          });
+        });
+      }
+    </script>
+
+    <!-- Bundle JavaScript Principal -->
+    <script type="module" src="/assets/index-DlPFLRPB.js"></script>
   </body>
 </html>
