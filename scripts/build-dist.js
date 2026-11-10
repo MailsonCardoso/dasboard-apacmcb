@@ -72,6 +72,23 @@ const indexHtmlContent = `<!DOCTYPE html>
 
     <!-- Estilos CSS Compilados -->
     <link rel="stylesheet" href="/assets/${mainCss}" />
+
+    <!-- TanStack Start / TSR Client Hydration Shim para SPA Estático cPanel -->
+    <script>
+      self.$_TSR = {
+        h: function() { this.hydrated = true; this.c(); },
+        e: function() { this.streamEnded = true; this.c(); },
+        c: function() {},
+        p: function(e) { this.initialized ? e() : this.buffer.push(e); },
+        buffer: [],
+        initialized: true,
+        router: {
+          manifest: { routes: {} },
+          matches: [],
+          dehydratedData: {}
+        }
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>
