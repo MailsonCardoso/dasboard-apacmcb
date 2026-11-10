@@ -94,3 +94,4 @@ const htaccessContent = `# =====================================================
 
 fs.writeFileSync(path.join(distDir, ".htaccess"), htaccessContent, "utf-8");
 console.log("Pasta dist/ gerada com sucesso para o cPanel!");
+
