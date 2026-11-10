@@ -23,7 +23,7 @@ export function ExpensesPage() {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<Expense | null>(null);
 
-  const cats = useMemo(() => [...new Set(expenses.map((i) => i.category))].sort(), [expenses]);
+  const cats = useMemo(() => [...new Set(expenses.map((i) => (typeof i.category === "object" ? ((i.category as any)?.nome || "") : i.category)))].sort(), [expenses]);
   const rows = useMemo(() => {
     const s = q.trim().toLowerCase();
     return byUnit(expenses, unitId)
@@ -40,7 +40,7 @@ export function ExpensesPage() {
     { key: "code", header: "Código", render: (r) => <span className="font-mono text-xs">{r.code}</span> },
     { key: "date", header: "Data", render: (r) => formatDate(r.date) },
     { key: "desc", header: "Descrição", render: (r) => <span className="inline-flex items-center gap-1.5">{r.status === "Vencida" && <AlertTriangle className="size-3.5 text-expense" />}{r.description}</span> },
-    { key: "cat", header: "Categoria", render: (r) => r.category },
+    { key: "cat", header: "Categoria", render: (r) => (typeof r.category === "object" ? ((r.category as any)?.nome || "") : r.category) },
     { key: "unit", header: "Unidade", render: (r) => unitName(r.unitId) },
     { key: "amount", header: "Valor", align: "right", render: (r) => <span className="font-medium text-expense">{formatBRL(r.amount)}</span> },
     { key: "due", header: "Vencimento", render: (r) => <span className={r.status === "Vencida" ? "font-medium text-expense" : ""}>{formatDate(r.dueDate)}</span> },
@@ -81,7 +81,7 @@ export function ExpensesPage() {
           { label: "Valor", value: <span className="text-expense">{formatBRL(sel.amount)}</span> },
           { label: "Vencimento", value: formatDate(sel.dueDate) },
           { label: "Pagamento", value: formatDate(sel.paymentDate) },
-          { label: "Categoria", value: sel.category },
+          { label: "Categoria", value: typeof sel.category === "object" ? ((sel.category as any)?.nome || "") : sel.category },
           { label: "Situação", value: <StatusBadge status={sel.status} /> },
           { label: "Unidade", value: unitName(sel.unitId) },
           { label: "Banco de origem", value: connName(sel.connectionId) },

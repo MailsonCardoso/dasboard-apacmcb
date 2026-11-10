@@ -74,7 +74,10 @@ export function buildCashFlow(inc: Income[], exp: Expense[], opening = 0): CashM
 
 export function groupByCategory<T extends { category: string; amount: number }>(rows: T[]) {
   const map = new Map<string, number>();
-  rows.forEach((r) => map.set(r.category, (map.get(r.category) ?? 0) + r.amount));
+  rows.forEach((r) => {
+    const cat = typeof r.category === "object" ? ((r.category as any)?.nome || "Outras") : String(r.category || "Outras");
+    map.set(cat, (map.get(cat) ?? 0) + r.amount);
+  });
   return [...map.entries()].map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 })).sort((a, b) => b.value - a.value);
 }
 

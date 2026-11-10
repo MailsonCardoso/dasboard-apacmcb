@@ -40,9 +40,9 @@ export function ReportsPage() {
     const uExp = byUnit(expenses, unitId);
     switch (report) {
       case "rec-mensal":
-        return inc.sort((a, b) => a.date.localeCompare(b.date)).map((r) => ({ Código: r.code, Data: formatDate(r.date), Descrição: r.description, Categoria: r.category, Unidade: unitName(r.unitId), Valor: formatBRL(r.amount), Situação: r.status, "Banco de origem": connName(r.connectionId) }));
+        return inc.sort((a, b) => a.date.localeCompare(b.date)).map((r) => ({ Código: r.code, Data: formatDate(r.date), Descrição: r.description, Categoria: typeof r.category === "object" ? ((r.category as any)?.nome || "") : r.category, Unidade: unitName(r.unitId), Valor: formatBRL(r.amount), Situação: r.status, "Banco de origem": connName(r.connectionId) }));
       case "des-mensal":
-        return exp.sort((a, b) => a.date.localeCompare(b.date)).map((r) => ({ Código: r.code, Data: formatDate(r.date), Descrição: r.description, Categoria: r.category, Unidade: unitName(r.unitId), Valor: formatBRL(r.amount), Vencimento: formatDate(r.dueDate), Pagamento: formatDate(r.paymentDate), Situação: r.status }));
+        return exp.sort((a, b) => a.date.localeCompare(b.date)).map((r) => ({ Código: r.code, Data: formatDate(r.date), Descrição: r.description, Categoria: typeof r.category === "object" ? ((r.category as any)?.nome || "") : r.category, Unidade: unitName(r.unitId), Valor: formatBRL(r.amount), Vencimento: formatDate(r.dueDate), Pagamento: formatDate(r.paymentDate), Situação: r.status }));
       case "demonstrativo":
         return [
           { Item: "Receitas lançadas", Valor: formatBRL(totalIncome(inc)) },

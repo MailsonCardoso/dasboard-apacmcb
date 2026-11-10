@@ -41,7 +41,10 @@ export function CashFlowPage() {
     const s = q.trim().toLowerCase();
     const r = flow
       .filter((m) => type === "all" || m.type === type)
-      .filter((m) => !s || m.description.toLowerCase().includes(s) || m.code.toLowerCase().includes(s) || m.category.toLowerCase().includes(s));
+      .filter((m) => {
+        const catStr = typeof m.category === "object" ? ((m.category as any)?.nome || "") : String(m.category || "");
+        return !s || m.description.toLowerCase().includes(s) || m.code.toLowerCase().includes(s) || catStr.toLowerCase().includes(s);
+      });
     return desc ? [...r].reverse() : r;
   }, [flow, type, q, desc]);
 
@@ -54,7 +57,7 @@ export function CashFlowPage() {
     { key: "code", header: "Código", render: (r) => <span className="font-mono text-xs">{r.code}</span> },
     { key: "desc", header: "Descrição", render: (r) => r.description },
     { key: "unit", header: "Unidade", render: (r) => unitName(r.unitId) },
-    { key: "cat", header: "Categoria", render: (r) => r.category },
+    { key: "cat", header: "Categoria", render: (r) => (typeof r.category === "object" ? ((r.category as any)?.nome || "") : r.category) },
     { key: "type", header: "Tipo", render: (r) => <StatusBadge status={r.type} /> },
     { key: "in", header: "Entrada", align: "right", render: (r) => (r.inflow ? <span className="text-income">{formatBRL(r.inflow)}</span> : "—") },
     { key: "out", header: "Saída", align: "right", render: (r) => (r.outflow ? <span className="text-expense">{formatBRL(r.outflow)}</span> : "—") },
@@ -93,7 +96,7 @@ export function CashFlowPage() {
           { label: "Tipo", value: <StatusBadge status={sel.type} /> },
           { label: "Valor", value: formatBRL(sel.inflow || sel.outflow) },
           { label: "Saldo após", value: formatBRL(sel.balanceAfter) },
-          { label: "Categoria", value: sel.category },
+          { label: "Categoria", value: typeof sel.category === "object" ? ((sel.category as any)?.nome || "") : sel.category },
           { label: "Unidade", value: unitName(sel.unitId) },
           { label: "Banco de origem", value: connName(sel.connectionId) },
         ] : []}

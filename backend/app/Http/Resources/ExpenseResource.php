@@ -9,7 +9,9 @@ class ExpenseResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $categoryName = $this->categoria ?? ($this->relationLoaded('categoria') && $this->categoria ? $this->categoria->nome : '');
+        $categoryName = $this->categoria instanceof \App\Models\Categoria
+            ? $this->categoria->nome
+            : (is_string($this->categoria) ? $this->categoria : ($this->categoria?->nome ?? 'Outras'));
         $dateStr = is_string($this->data_lancamento) ? substr($this->data_lancamento, 0, 10) : $this->data_lancamento->format('Y-m-d');
         $dueStr = $this->data_vencimento ? (is_string($this->data_vencimento) ? substr($this->data_vencimento, 0, 10) : $this->data_vencimento->format('Y-m-d')) : $dateStr;
         $payStr = $this->data_liquidacao ? (is_string($this->data_liquidacao) ? substr($this->data_liquidacao, 0, 10) : $this->data_liquidacao->format('Y-m-d')) : null;
@@ -23,7 +25,7 @@ class ExpenseResource extends JsonResource
             'dueDate' => $dueStr,
             'paymentDate' => $payStr,
             'description' => $this->descricao,
-            'category' => $categoryName,
+            'category' => (string) $categoryName,
             'unitId' => (string) $this->unidade_id,
             'amount' => (float) $this->valor,
             'status' => $status,

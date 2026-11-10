@@ -23,7 +23,7 @@ export function IncomesPage() {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<Income | null>(null);
 
-  const cats = useMemo(() => [...new Set(incomes.map((i) => i.category))].sort(), [incomes]);
+  const cats = useMemo(() => [...new Set(incomes.map((i) => (typeof i.category === "object" ? ((i.category as any)?.nome || "") : i.category)))].sort(), [incomes]);
   const rows = useMemo(() => {
     const s = q.trim().toLowerCase();
     return byUnit(incomes, unitId)
@@ -38,7 +38,7 @@ export function IncomesPage() {
     { key: "code", header: "Código", render: (r) => <span className="font-mono text-xs">{r.code}</span> },
     { key: "date", header: "Data", render: (r) => formatDate(r.date) },
     { key: "desc", header: "Descrição", render: (r) => r.description },
-    { key: "cat", header: "Categoria", render: (r) => r.category },
+    { key: "cat", header: "Categoria", render: (r) => (typeof r.category === "object" ? ((r.category as any)?.nome || "") : r.category) },
     { key: "unit", header: "Unidade", render: (r) => unitName(r.unitId) },
     { key: "amount", header: "Valor", align: "right", render: (r) => <span className="font-medium text-income">{formatBRL(r.amount)}</span> },
     { key: "status", header: "Situação", render: (r) => <StatusBadge status={r.status} /> },
@@ -74,7 +74,7 @@ export function IncomesPage() {
         items={sel ? [
           { label: "Data", value: formatDate(sel.date) },
           { label: "Valor", value: <span className="text-income">{formatBRL(sel.amount)}</span> },
-          { label: "Categoria", value: sel.category },
+          { label: "Categoria", value: typeof sel.category === "object" ? ((sel.category as any)?.nome || "") : sel.category },
           { label: "Situação", value: <StatusBadge status={sel.status} /> },
           { label: "Unidade", value: unitName(sel.unitId) },
           { label: "Banco de origem", value: connName(sel.connectionId) },
