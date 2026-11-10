@@ -32,3 +32,4 @@ Create-Icon 192 'public/icon-192.png'
 Create-Icon 512 'public/icon-512.png'
 Create-Icon 64 'public/favicon.png'
 Write-Host 'Icons created successfully!'
+
