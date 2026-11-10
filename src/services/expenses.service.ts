@@ -14,7 +14,7 @@ function normalizeExpense(e: any): Expense {
 /** GET /expenses — consulta de despesas centralizadas */
 export const expensesService = {
   list: async () => {
-    const list = await apiGet<Expense[]>("/expenses", expenses);
+    const list = await apiGet<Expense[]>("/expenses", []);
     return Array.isArray(list) ? list.map(normalizeExpense) : [];
   },
 };

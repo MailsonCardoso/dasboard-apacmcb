@@ -14,7 +14,7 @@ function normalizeIncome(i: any): Income {
 /** GET /incomes — consulta de receitas centralizadas */
 export const incomesService = {
   list: async () => {
-    const list = await apiGet<Income[]>("/incomes", incomes);
+    const list = await apiGet<Income[]>("/incomes", []);
     return Array.isArray(list) ? list.map(normalizeIncome) : [];
   },
 };

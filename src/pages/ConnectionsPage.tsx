@@ -43,7 +43,7 @@ export function ConnectionsPage() {
     res.ok ? toast.success(`${c.name}: ${res.message}`) : toast.error(`${c.name}: ${res.message}`);
   };
 
-  const save = () => {
+  const save = async () => {
     if (!draft) return;
     if (!draft.name || !draft.host || !draft.database || !draft.user) {
       toast.error("Preencha nome, servidor, banco e usuário.");
@@ -52,13 +52,30 @@ export function ConnectionsPage() {
     const { password, ...rest } = draft;
     const mask = password ? "•".repeat(Math.max(8, password.length)) : undefined;
     if (draft.id) {
-      setList((l) => l.map((x) => (x.id === draft.id ? { ...x, ...rest, id: x.id, passwordMask: mask ?? x.passwordMask } : x)));
+      const updated = await connectionsService.update(draft.id, draft);
+      setList((l) => l.map((x) => (x.id === draft.id ? { ...x, ...rest, ...updated, passwordMask: mask ?? x.passwordMask } : x)));
       toast.success("Configuração da conexão atualizada.");
     } else {
-      setList((l) => [...l, { ...rest, id: `c${Date.now()}`, passwordMask: mask ?? "••••••••", lastCheck: new Date().toISOString().slice(0, 19) }]);
+      const created = await connectionsService.create(draft);
+      const newConn = {
+        ...rest,
+        ...created,
+        id: created.id || `c${Date.now()}`,
+        passwordMask: mask ?? "••••••••",
+        lastCheck: created.lastCheck || new Date().toISOString().slice(0, 19),
+      };
+      setList((l) => [...l, newConn]);
       toast.success("Conexão cadastrada no FinanceControl.");
     }
     setDraft(null);
+  };
+
+  const remove = async () => {
+    if (!del) return;
+    await connectionsService.delete(del.id);
+    setList((l) => l.filter((x) => x.id !== del.id));
+    toast.success(`Conexão ${del.name} removida.`);
+    setDel(null);
   };
 
   const columns: Column<DbConnection>[] = [
@@ -169,7 +186,7 @@ export function ConnectionsPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { setList((l) => l.filter((x) => x.id !== del?.id)); toast.success("Cadastro da conexão removido."); setDel(null); }}>
+            <AlertDialogAction onClick={remove}>
               Excluir cadastro
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -14,3 +14,4 @@ export const Route = createFileRoute("/login")({
   }),
   component: LoginPage,
 });
+
