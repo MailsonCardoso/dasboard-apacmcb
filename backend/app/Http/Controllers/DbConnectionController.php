@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Crypt;
 
 class DbConnectionController extends Controller
 {
@@ -137,39 +138,77 @@ class DbConnectionController extends Controller
         $id = (int) str_replace('c', '', $id);
         $connection = Conexao::findOrFail($id);
         $now = Carbon::now();
-        $connection->update(['ultima_verificacao' => $now]);
 
-        if ($connection->status === 'offline') {
-            $msg = "Não foi possível alcançar {$connection->host}:{$connection->porta}";
-            VerificacaoConexao::create([
-                'conexao_id' => $connection->id,
-                'status' => 'offline',
-                'latencia_ms' => null,
-                'mensagem' => $msg,
-                'verificado_em' => $now,
-            ]);
+        $start = microtime(true);
+        $status = 'online';
+        $latency = 0;
+        $msg = '';
+        $decryptedPassword = '';
 
-            return response()->json([
-                'ok' => false,
-                'message' => $msg,
-                'lastCheck' => $now->toIso8601String(),
-            ]);
+        try {
+            if ($connection->senha_cifrada) {
+                try {
+                    $decryptedPassword = Crypt::decryptString($connection->senha_cifrada);
+                } catch (\Throwable) {
+                    $decryptedPassword = '';
+                }
+            }
+
+            $tipo = strtolower(str_replace(' ', '', $connection->tipo));
+
+            if ($tipo === 'mysql' || $tipo === 'mariadb') {
+                $dsn = "mysql:host={$connection->host};port={$connection->porta};dbname={$connection->banco};charset=utf8mb4";
+                $options = [
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                    \PDO::ATTR_TIMEOUT => 4,
+                ];
+                $pdo = new \PDO($dsn, $connection->usuario_leitura, $decryptedPassword, $options);
+                $pdo->query('SELECT 1');
+            } elseif ($tipo === 'postgresql') {
+                $dsn = "pgsql:host={$connection->host};port={$connection->porta};dbname={$connection->banco}";
+                $pdo = new \PDO($dsn, $connection->usuario_leitura, $decryptedPassword, [\PDO::ATTR_TIMEOUT => 4]);
+                $pdo->query('SELECT 1');
+            } else {
+                // Teste de acessibilidade de socket de rede
+                $errno = 0;
+                $errstr = '';
+                $fp = @fsockopen($connection->host, (int) $connection->porta, $errno, $errstr, 4);
+                if (!$fp) {
+                    throw new \Exception("Porta {$connection->porta} inacessível: {$errstr}");
+                }
+                fclose($fp);
+            }
+
+            $latency = (int) round((microtime(true) - $start) * 1000);
+            $status = $latency > 1500 ? 'instavel' : 'online';
+            $msg = "Conexão estabelecida com sucesso ({$latency} ms)";
+        } catch (\Throwable $e) {
+            $latency = (int) round((microtime(true) - $start) * 1000);
+            $status = 'offline';
+            $rawMsg = $e->getMessage();
+            if ($decryptedPassword && strlen($decryptedPassword) > 3) {
+                $rawMsg = str_replace($decryptedPassword, '******', $rawMsg);
+            }
+            $msg = 'Falha ao conectar: ' . substr($rawMsg, 0, 180);
         }
 
-        $latency = $connection->status === 'instavel' ? 1840 : 48;
-        $latencyFormatted = $connection->status === 'instavel' ? '1.840' : '48';
-        $msg = "Conexão estabelecida (somente leitura) em {$latencyFormatted} ms";
+        $connection->update([
+            'status' => $status,
+            'ultima_verificacao' => $now,
+        ]);
 
         VerificacaoConexao::create([
             'conexao_id' => $connection->id,
-            'status' => $connection->status === 'instavel' ? 'instavel' : 'online',
-            'latencia_ms' => $latency,
+            'status' => $status,
+            'latencia_ms' => $status === 'offline' ? null : $latency,
             'mensagem' => $msg,
             'verificado_em' => $now,
         ]);
 
         return response()->json([
-            'ok' => true,
+            'ok' => $status !== 'offline',
+            'status' => $status,
+            'latency' => $latency,
             'message' => $msg,
             'lastCheck' => $now->toIso8601String(),
         ]);

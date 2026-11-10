@@ -30,38 +30,67 @@ class UnitController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'nome' => 'required|string|max:150',
-            'codigo' => 'required|string|max:30|unique:unidades,codigo',
-            'descricao' => 'nullable|string',
-            'ativa' => 'boolean',
+        $nome = $request->input('nome') ?? $request->input('name');
+        $codigo = $request->input('codigo') ?? $request->input('code');
+        $descricao = $request->input('descricao') ?? $request->input('description');
+        $ativa = $request->has('ativa') ? $request->boolean('ativa') : ($request->has('active') ? $request->boolean('active') : true);
+
+        if (!$nome || !$codigo) {
+            return response()->json(['message' => 'Nome e código são obrigatórios.'], 422);
+        }
+
+        if (Unidade::where('codigo', $codigo)->exists()) {
+            return response()->json(['message' => "Já existe uma unidade com o código '{$codigo}'."], 422);
+        }
+
+        $unit = Unidade::create([
+            'nome' => $nome,
+            'codigo' => $codigo,
+            'descricao' => $descricao,
+            'ativa' => $ativa,
         ]);
 
-        $unit = Unidade::create($validated);
         return response()->json(new UnitResource($unit), 201);
     }
 
     public function update(Request $request, string $id): JsonResponse
     {
-        $id = str_replace('u', '', $id);
+        $id = (int) str_replace('u', '', $id);
         $unit = Unidade::findOrFail($id);
 
-        $validated = $request->validate([
-            'nome' => 'sometimes|string|max:150',
-            'codigo' => 'sometimes|string|max:30|unique:unidades,codigo,' . $unit->id,
-            'descricao' => 'nullable|string',
-            'ativa' => 'boolean',
+        $nome = $request->input('nome') ?? $request->input('name') ?? $unit->nome;
+        $codigo = $request->input('codigo') ?? $request->input('code') ?? $unit->codigo;
+        $descricao = $request->input('descricao') ?? $request->input('description') ?? $unit->descricao;
+        $ativa = $request->has('ativa') ? $request->boolean('ativa') : ($request->has('active') ? $request->boolean('active') : $unit->ativa);
+
+        if ($codigo !== $unit->codigo && Unidade::where('codigo', $codigo)->where('id', '!=', $unit->id)->exists()) {
+            return response()->json(['message' => "Já existe uma unidade com o código '{$codigo}'."], 422);
+        }
+
+        $unit->update([
+            'nome' => $nome,
+            'codigo' => $codigo,
+            'descricao' => $descricao,
+            'ativa' => $ativa,
         ]);
 
-        $unit->update($validated);
         return response()->json(new UnitResource($unit));
     }
 
     public function destroy(string $id): JsonResponse
     {
-        $id = str_replace('u', '', $id);
+        $id = (int) str_replace('u', '', $id);
         $unit = Unidade::findOrFail($id);
+
+        if ($unit->conexoes()->exists() || $unit->lancamentos()->exists()) {
+            return response()->json([
+                'message' => 'Esta unidade possui conexões ou lançamentos vinculados e não pode ser excluída. Desative-a ou exclua as conexões antes.',
+            ], 422);
+        }
+
+        $unit->usuarios()->detach();
         $unit->delete();
+
         return response()->json(['message' => 'Unidade excluída com sucesso.']);
     }
 }

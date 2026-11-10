@@ -54,7 +54,21 @@ class FinanceApiTest extends TestCase
 
     public function test_can_test_connection(): void
     {
-        $response = $this->postJson('/api/connections/1/test');
+        $conexao = \App\Models\Conexao::firstOrCreate(
+            ['nome' => 'Conexão Teste Automatizado'],
+            [
+                'unidade_id' => 1,
+                'tipo' => 'MySQL',
+                'host' => '127.0.0.1',
+                'porta' => 3306,
+                'banco' => 'test_db',
+                'usuario_leitura' => 'user_test',
+                'senha_cifrada' => \Illuminate\Support\Facades\Crypt::encryptString('test_pwd'),
+                'status' => 'offline',
+            ]
+        );
+
+        $response = $this->postJson("/api/connections/{$conexao->id}/test");
         $response->assertStatus(200)
                  ->assertJsonStructure(['ok', 'message', 'lastCheck']);
     }
@@ -118,5 +132,25 @@ class FinanceApiTest extends TestCase
                  ->assertJsonStructure([
                      '*' => ['item', 'valor']
                  ]);
+    }
+
+    public function test_can_create_and_delete_unit(): void
+    {
+        $uniqueCode = 'TST-' . substr((string) time(), -6);
+        $createResponse = $this->postJson('/api/units', [
+            'name' => 'Unidade Teste Automatizado',
+            'code' => $uniqueCode,
+            'description' => 'Unidade criada pelo teste de integração',
+            'active' => true,
+        ]);
+
+        $createResponse->assertStatus(201)
+                       ->assertJsonStructure(['id', 'name', 'code', 'description', 'active']);
+
+        $unitId = $createResponse->json('id');
+
+        $deleteResponse = $this->deleteJson("/api/units/{$unitId}");
+        $deleteResponse->assertStatus(200)
+                       ->assertJson(['message' => 'Unidade excluída com sucesso.']);
     }
 }

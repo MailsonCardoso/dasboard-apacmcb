@@ -52,3 +52,4 @@ class ClearMockDataCommand extends Command
         return Command::SUCCESS;
     }
 }
+
