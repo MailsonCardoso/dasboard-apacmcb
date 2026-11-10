@@ -1,17 +1,19 @@
 import { queryOptions } from "@tanstack/react-query";
 import { connections } from "@/mocks/data";
 import type { DbConnection } from "@/types";
-import { simulate } from "./http";
+import { apiGet, apiPost } from "./http";
 
-/** GET /connections — cadastro de configuração do FinanceControl (não altera bancos de origem). */
+/** GET /connections — cadastro de configuração do FinanceControl */
 export const connectionsService = {
-  list: () => simulate<DbConnection[]>(connections),
-  /** POST /connections/:id/test — demonstrativo */
+  list: () => apiGet<DbConnection[]>("/connections", connections),
+  /** POST /connections/:id/test — verificação de conectividade */
   test: async (c: DbConnection) => {
-    await simulate(null, 900);
-    if (c.status === "offline") return { ok: false, message: `Não foi possível alcançar ${c.host}:${c.port}` };
-    return { ok: true, message: `Conexão estabelecida (somente leitura) em ${c.status === "instavel" ? "1.840" : "48"} ms` };
+    const fallbackMessage = c.status === "offline"
+      ? { ok: false, message: `Não foi possível alcançar ${c.host}:${c.port}` }
+      : { ok: true, message: `Conexão estabelecida (somente leitura) em ${c.status === "instavel" ? "1.840" : "48"} ms` };
+
+    return apiPost<{ ok: boolean; message: string }>(`/connections/${c.id}/test`, {}, fallbackMessage);
   },
 };
 
-export const connectionsQuery = queryOptions({ queryKey: ["connections"], queryFn: connectionsService.list });
+export const connectionsQuery = queryOptions({ queryKey: ["connections"], queryFn: connectionsService.list, staleTime: 60_000 });
